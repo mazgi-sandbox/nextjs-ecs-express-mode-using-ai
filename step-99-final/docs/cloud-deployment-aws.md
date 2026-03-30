@@ -71,16 +71,14 @@ cp iac/aws/ephemeral/terraform.tfvars.example iac/aws/ephemeral/terraform.tfvars
 Edit `iac/aws/terraform.tfvars`:
 
 - `aws_region` — your AWS region (default: `us-east-1`)
-- `base_domain_name` — your base domain (e.g. `example.com`)
 
 Edit `iac/aws/ephemeral/terraform.tfvars`:
 
-- `base_domain_name` — must match the persistent layer
 - `database_password` — generate with `openssl rand -base64 32`
 - OAuth2 client IDs (`apple_client_id`, `discord_client_id`, `gh_client_id`, `google_oauth_client_id`, `twitter_client_id`) and Apple config (`apple_team_id`, `apple_key_id`)
 - `native_app_url_scheme` — e.g. `oauth2app`
 
-> **Note:** JWT secrets, session secret, and OAuth2 client secrets are stored directly in Secrets Manager — populate them externally (CLI or AWS Console), not via Terraform. Service URLs are derived from DNS: `https://{web,backend}.{app_unique_id}-aws.{base_domain_name}`.
+> **Note:** JWT secrets, session secret, and OAuth2 client secrets are stored directly in Secrets Manager — populate them externally (CLI or AWS Console), not via Terraform.
 
 ## 3. Create persistent infrastructure and push images
 
@@ -128,7 +126,7 @@ docker compose --profile=iac run --rm iac terraform -chdir=aws/ephemeral init \
 docker compose --profile=iac run --rm iac terraform -chdir=aws/ephemeral apply -var-file=terraform.tfvars
 ```
 
-Service URLs are derived from DNS (`https://{web,backend}.{app_unique_id}-aws.{base_domain_name}`), so no second apply is needed. Verify the deployed URLs:
+Verify the deployed URLs:
 
 ```sh
 docker compose --profile=iac run --rm iac terraform -chdir=aws/ephemeral output
@@ -152,11 +150,9 @@ Persistent ECR repositories remain — images are available for the next test cy
 | Persistent | Security Groups | Backend (4000), Web (3000), RDS (5432) |
 | Persistent | IAM Roles | ECS task execution role + ECS Express infrastructure role |
 | Persistent | Secrets Manager | 9 backend secrets (empty containers) |
-| Persistent | Route 53 Zone | `aws.{app_unique_id}.{base_domain_name}` |
 | Ephemeral | NAT Gateway | Private subnet outbound access (ECR image pull) |
 | Ephemeral | RDS (PostgreSQL 17) | Database instance (`db.t4g.micro`) in private subnet |
 | Ephemeral | ECS Express (backend) | NestJS API on port 4000, auto-scaling 1-2 tasks |
 | Ephemeral | ECS Express (web) | Static site + reverse proxy on port 3000, auto-scaling 1-2 tasks |
-| Ephemeral | DNS records | CNAME records for backend and web services |
 
 > **Note:** RDS has `skip_final_snapshot = true` and NAT Gateway incurs cost even when idle. Adjust for production use.

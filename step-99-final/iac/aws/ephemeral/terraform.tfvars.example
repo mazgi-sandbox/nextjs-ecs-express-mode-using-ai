@@ -1,8 +1,5 @@
 app_unique_id = "oauth2-app"
 
-# DNS (service URLs are derived: https://{web,backend}.aws.{app_unique_id}.{base_domain_name})
-base_domain_name = "example.com"
-
 # Container image tag (registry URL is derived from ECR repository outputs)
 # image_tag = "latest"
 

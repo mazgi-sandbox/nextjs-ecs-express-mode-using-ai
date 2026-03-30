@@ -14,3 +14,8 @@
 - could you remove all github actions, backend, and iac related files except web/app or web/e2e-tests in step-2?
 - could you replace an empty Next.js App Router app with step-2/web/app?
 - could you replace an empty e2e test with step-2/web/e2e-tests?
+- could you write prompts in step-1/prompts.md that need to you growth it from step-1 to step-2?
+- could you copy step-99-final as step-3 dir?
+- could you remove all backend related files in step-3?
+- could you remove dns zone "main" and resources depends on?
+- also remove dns zone main and base domain name related resoures or entries in step-99?

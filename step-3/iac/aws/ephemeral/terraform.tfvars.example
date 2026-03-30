@@ -1,0 +1,4 @@
+app_unique_id = "oauth2-app"
+
+# Container image tag (registry URL is derived from ECR repository outputs)
+# image_tag = "latest"

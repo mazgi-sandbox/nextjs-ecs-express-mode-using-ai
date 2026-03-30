@@ -1,0 +1,104 @@
+services:
+  iac:
+    build:
+      context: ./iac
+      dockerfile: ../Dockerfiles.d/iac/Dockerfile
+      args:
+        GID: "${GID:-1000}"
+        UID: "${UID:-1000}"
+    environment:
+      AWS_PROFILE: ${AWS_PROFILE:-}
+      TF_VAR_app_unique_id: ${APP_UNIQUE_ID}
+      TF_VAR_aws_region: ${AWS_REGION}
+      TF_VAR_aws_tf_state_bucket: ${AWS_TF_STATE_BUCKET}
+      TF_VAR_aws_tf_state_region: ${AWS_TF_STATE_REGION}
+      TF_VAR_apple_client_id: ${AUTH_APPLE_CLIENT_ID}
+      TF_VAR_apple_team_id: ${AUTH_APPLE_TEAM_ID}
+      TF_VAR_apple_key_id: ${AUTH_APPLE_KEY_ID}
+      TF_VAR_discord_client_id: ${AUTH_DISCORD_CLIENT_ID}
+      TF_VAR_gh_client_id: ${AUTH_GITHUB_CLIENT_ID}
+      TF_VAR_google_oauth_client_id: ${AUTH_GOOGLE_CLIENT_ID}
+      TF_VAR_twitter_client_id: ${AUTH_TWITTER_CLIENT_ID}
+      TF_VAR_image_tag: ${IMAGE_TAG:-latest}
+      TF_VAR_smtp_host: ${SMTP_HOST:-mailpit}
+      TF_VAR_smtp_port: ${SMTP_PORT:-1025}
+      TF_VAR_smtp_secure: ${SMTP_SECURE:-false}
+      TF_VAR_smtp_user: ${SMTP_USER:-}
+      TF_VAR_smtp_from: ${SMTP_FROM:-noreply@localhost}
+    profiles:
+      - iac
+    volumes:
+      - .:/work
+      - ~/.aws:/mnt/.aws:ro
+    working_dir: /work/iac
+
+  web:
+    build:
+      context: ./web/app
+      dockerfile: ../../Dockerfiles.d/web/Dockerfile
+      args:
+        GID: "${GID:-1000}"
+        UID: "${UID:-1000}"
+    command:
+      - sh
+      - -c
+      - |
+        npm-check-updates --upgrade
+        sort-package-json
+        pnpm install
+        pnpm audit --fix
+        pnpm install
+        pnpm dev
+    env_file:
+      - .env
+    environment:
+      # Point the pnpm store to the bind-mounted volume so it persists across
+      # container rebuilds and is shared between containers.
+      PNPM_HOME: /work/.pnpm-store
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "const n=require('net');const s=n.createConnection(3000,'localhost');s.on('connect',()=>{s.destroy();process.exit(0)});s.on('error',()=>process.exit(1))"
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/work
+    working_dir: /work/web/app
+
+  web-e2e-tests:
+    build:
+      context: ./web/e2e-tests
+      dockerfile: ../../Dockerfiles.d/web-e2e-tests/Dockerfile
+      args:
+        GID: "${GID:-1000}"
+        UID: "${UID:-1000}"
+    command:
+      - sh
+      - -c
+      - |
+        npm-check-updates --upgrade
+        sort-package-json
+        pnpm install
+        pnpm audit --fix
+        pnpm install
+        pnpm test
+    depends_on:
+      web:
+        condition: service_healthy
+    environment:
+      BASE_URL: http://web:3000
+      CI: ${CI:-}
+      # Point the pnpm store to the bind-mounted volume so it persists across
+      # container rebuilds and is shared between containers.
+      PNPM_HOME: /work/.pnpm-store
+    profiles:
+      - e2e-tests
+    volumes:
+      - .:/work
+    working_dir: /work/web/e2e-tests

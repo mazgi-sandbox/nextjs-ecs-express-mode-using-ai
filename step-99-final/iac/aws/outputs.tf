@@ -134,22 +134,3 @@ output "secret_smtp_pass_arn" {
   description = "Secrets Manager ARN for SMTP_PASS"
   value       = aws_secretsmanager_secret.backend_smtp_pass.arn
 }
-
-# -----------------------------------------------------------------------------
-# Route 53 (referenced by ephemeral layer)
-# -----------------------------------------------------------------------------
-
-output "dns_zone_id" {
-  description = "Route 53 hosted zone ID"
-  value       = aws_route53_zone.main.zone_id
-}
-
-output "dns_zone_name" {
-  description = "Route 53 hosted zone name"
-  value       = aws_route53_zone.main.name
-}
-
-output "dns_zone_name_servers" {
-  description = "Route 53 hosted zone name servers (delegate from parent zone)"
-  value       = aws_route53_zone.main.name_servers
-}
