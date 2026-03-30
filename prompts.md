@@ -29,3 +29,6 @@
 - could you write prompts in step-3/prompts.md that need to you growth it from step-3 to step-4?
 - could you create step-0 dir and write prompts in step-0/prompts.md that need to you growth it from step-0 to step-1?
 - could you remove social account authentication flows from step-99?
+- could you copy step-99-final as step-5 dir?
+- could you remove features except items from step-5 web and backend?
+- could you write prompts in step-4/prompts.md that need to you growth it from step-4 to step-5?
