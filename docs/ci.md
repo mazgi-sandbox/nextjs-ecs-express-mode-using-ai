@@ -8,9 +8,6 @@
 |----------|--------|-------------|
 | `backend.e2e-tests.yaml` | `ubuntu-latest` | Backend image + NestJS E2E tests via Docker Compose |
 | `web.e2e-tests.yaml` | `ubuntu-latest` | Full stack + Playwright E2E tests |
-| `android.e2e-tests.yaml` | `ubuntu-latest` | Backend + API-35 emulator (KVM + AVD cache) + Espresso |
-| `apple.e2e-tests.yaml` | `macos-15` | PostgreSQL + backend natively + XCUITest on iPhone 17 sim |
-| `windows.e2e-tests.yaml` | `windows-2025` | PostgreSQL + backend natively + Appium E2E |
 
 > **UID/GID in CI:** E2E workflows append `UID=$(id -u)` and `GID=$(id -g)` to `.env` before `docker compose build` so container user matches the runner (avoids `EACCES` errors).
 
@@ -77,7 +74,7 @@ Replace `Staging` with `Production` for the production environment. See [Env fil
 | `AUTH_TWITTER_CLIENT_SECRET` | X (Twitter) OAuth2 client secret |
 | `AUTH_SESSION_SECRET` | Session cookies (Twitter PKCE) — `openssl rand -base64 32` |
 
-All OAuth2 credentials (secrets + variables) are required so the backend starts, even though Android/iOS/Windows E2E tests only exercise email/password auth.
+All OAuth2 credentials (secrets + variables) are required so the backend starts.
 
 ### E2E test variables
 

@@ -1,6 +1,6 @@
 # template-containerized-oauth2-project
 
-A multi-platform OAuth2 template project with a NestJS backend, a Next.js web client, and native client apps for Android, iOS/macOS, and Windows.
+An example project for developing a Next.js app on ECS Express Mode using AI, with a NestJS backend.
 
 ## Services
 
@@ -8,16 +8,10 @@ A multi-platform OAuth2 template project with a NestJS backend, a Next.js web cl
 |---------|-----------|------|
 | backend | NestJS 11 + PostgreSQL 17 | 4000 |
 | web | Next.js 16 | 3000 |
-| android | Kotlin + Jetpack Compose | — |
-| apple | SwiftUI | — |
-| windows | WinUI 3 (C# / Windows App SDK 1.8) | — |
 
 ## Prerequisites
 
 - Docker Engine + Docker Compose (e.g. [Docker Desktop](https://www.docker.com/products/docker-desktop/), [Podman](https://podman.io/), [Colima](https://github.com/abiosoft/colima))
-- (Android) Android Studio
-- (iOS/macOS) Xcode
-- (Windows) Visual Studio 2022 with **.NET desktop development** and **Windows App SDK C# Templates** workloads
 
 ## Quick Start
 
@@ -53,17 +47,6 @@ After creating a repository from this template, follow these steps. Only step 1 
 ├── web/
 │   ├── app/               # Next.js SPA
 │   └── e2e-tests/         # Playwright E2E tests
-├── android/               # Kotlin + Jetpack Compose
-│   └── app/src/
-│       ├── main/          # App source
-│       └── androidTest/   # Espresso E2E tests
-├── apple/                 # SwiftUI (iOS, macOS, watchOS, etc.)
-│   ├── app/               # App source
-│   └── appUITests/        # XCUITest E2E tests
-├── windows/               # WinUI 3 (C# / Windows App SDK)
-│   ├── windows.slnx       # Solution file
-│   ├── app/               # App source
-│   └── e2e-tests/         # Appium E2E tests
 ├── iac/                   # Terraform IaC (AWS, Azure, GCP)
 ├── Dockerfiles.d/
 ├── .github/               # GitHub Actions workflows + custom actions

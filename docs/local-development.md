@@ -74,39 +74,3 @@ docker compose --profile=e2e-tests run --rm web-e2e-tests
 docker compose --profile=e2e-tests down --remove-orphans
 ```
 
-### Android (Espresso)
-
-```sh
-docker compose up backend
-cd android && ./gradlew connectedAndroidTest
-```
-
-Connects to `http://10.0.2.2:4000` (emulator loopback). No `adb reverse` needed for E2E.
-
-### iOS/macOS (XCUITest)
-
-```sh
-docker compose up backend
-xcodebuild test \
-  -project apple/app.xcodeproj \
-  -scheme app \
-  -destination 'platform=iOS Simulator,name=iPhone 17' \
-  -only-testing:appUITests
-```
-
-### Windows (Appium)
-
-```powershell
-docker compose up backend -d
-dotnet build windows/app/app.csproj -c Debug -p:Platform=x64
-Add-AppxPackage -Register "windows\app\bin\x64\Debug\net8.0-windows10.0.19041.0\win-x64\AppxManifest.xml"
-
-# Get Package Family Name
-$pkg = Get-AppxPackage | Where-Object { $_.Name -like "*f0af5309*" }
-echo "$($pkg.PackageFamilyName)!App"
-
-# In separate terminal: appium
-cd windows/e2e-tests && dotnet test --settings test.runsettings
-```
-
-Prerequisites: Windows 10/11 Developer Mode, .NET 8 SDK, Appium + `appium-windows-driver`, [WinAppDriver v1.2.1](https://github.com/microsoft/WinAppDriver/releases).
