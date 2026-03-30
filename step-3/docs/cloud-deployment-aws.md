@@ -59,24 +59,20 @@ aws s3api put-bucket-versioning --bucket YOUR_BUCKET_NAME \
   --versioning-configuration Status=Enabled
 ```
 
-Set the bucket name in `.env` as `AWS_TF_STATE_BUCKET` and pass it via `-backend-config` at `terraform init` time (see step 3), so you do not need to edit `versions.tf`.
+Set the bucket name in `.env` as `AWS_TF_STATE_BUCKET` and pass it via `-backend-config` at `terraform init` time (see step 2), so you do not need to edit `versions.tf`.
 
 ## 2. Configure variables
 
 ```sh
 cp iac/aws/terraform.tfvars.example iac/aws/terraform.tfvars
-cp iac/aws/ephemeral/terraform.tfvars.example iac/aws/ephemeral/terraform.tfvars
 ```
 
 Edit `iac/aws/terraform.tfvars`:
 
 - `aws_region` — your AWS region (default: `us-east-1`)
-
-Edit `iac/aws/ephemeral/terraform.tfvars`:
-
 - `image_tag` — container image tag (default: `latest`)
 
-## 3. Create persistent infrastructure and push images
+## 3. Deploy infrastructure and push images
 
 ```sh
 source .env
@@ -88,7 +84,7 @@ docker compose --profile=iac run --rm iac terraform -chdir=aws apply -var-file=t
 
 > **Note:** On a fresh AWS account that has never used ECS, the first `terraform apply` may fail because the `AWSServiceRoleForECS` service-linked role does not yet exist. AWS creates this role automatically in the background, so simply re-running `terraform apply` will succeed.
 
-Then build and push the production web image (the registry URL comes from the persistent layer output):
+Then build and push the production web image (the registry URL comes from the Terraform output):
 
 ```sh
 # Authenticate Docker with ECR
@@ -103,42 +99,30 @@ docker build \
 docker push ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/oauth2-app-web:latest
 ```
 
-The ephemeral layer derives the registry URL from the persistent layer's ECR repository outputs. The `image_tag` variable defaults to `latest`.
-
-## 4. Deploy ephemeral infrastructure
-
-```sh
-source .env
-docker compose --profile=iac run --rm iac terraform -chdir=aws/ephemeral init \
-  -backend-config="bucket=$AWS_TF_STATE_BUCKET" \
-  -backend-config="region=$AWS_TF_STATE_REGION"
-docker compose --profile=iac run --rm iac terraform -chdir=aws/ephemeral apply -var-file=terraform.tfvars
-```
+The `image_tag` variable defaults to `latest`.
 
 Verify the deployed URLs:
 
 ```sh
-docker compose --profile=iac run --rm iac terraform -chdir=aws/ephemeral output
+docker compose --profile=iac run --rm iac terraform -chdir=aws output
 ```
 
-## 5. Tear down (after testing)
+## 4. Tear down
 
 ```sh
-docker compose --profile=iac run --rm iac terraform -chdir=aws/ephemeral destroy -var-file=terraform.tfvars
+docker compose --profile=iac run --rm iac terraform -chdir=aws destroy -var-file=terraform.tfvars
 ```
-
-Persistent ECR repositories remain — images are available for the next test cycle.
 
 ## Resources created
 
-| Layer | Resource | Description |
-|-------|----------|-------------|
-| Persistent | ECR | Docker image repository (web) |
-| Persistent | VPC | Custom VPC with public + private subnets across 2 AZs |
-| Persistent | Internet Gateway | Public subnet internet access |
-| Persistent | Security Groups | Web (3000) |
-| Persistent | IAM Roles | ECS task execution role + ECS Express infrastructure role |
-| Ephemeral | NAT Gateway | Private subnet outbound access (ECR image pull) |
-| Ephemeral | ECS Express (web) | Next.js app on port 3000, auto-scaling 1-2 tasks |
+| Resource | Description |
+|----------|-------------|
+| ECR | Docker image repository (web) |
+| VPC | Custom VPC with public + private subnets across 2 AZs |
+| Internet Gateway | Public subnet internet access |
+| NAT Gateway | Private subnet outbound access (ECR image pull) |
+| Security Groups | Web (3000) |
+| IAM Roles | ECS task execution role + ECS Express infrastructure role |
+| ECS Express (web) | Next.js app on port 3000, auto-scaling 1-2 tasks |
 
 > **Note:** NAT Gateway incurs cost even when idle. Adjust for production use.

@@ -1,4 +1,4 @@
-name: IaC Persistent
+name: IaC
 
 on:
   pull_request:
@@ -28,7 +28,7 @@ permissions:
 
 jobs:
   staging:
-    name: Persistent — Staging
+    name: Staging
     uses: ./.github/workflows/_reusable-iac.yaml
     with:
       environment: Staging
@@ -36,7 +36,7 @@ jobs:
     secrets: inherit
 
   production:
-    name: Persistent — Production
+    name: Production
     needs: staging
     if: github.event_name == 'workflow_dispatch' && inputs.environment == 'Production'
     uses: ./.github/workflows/_reusable-iac.yaml

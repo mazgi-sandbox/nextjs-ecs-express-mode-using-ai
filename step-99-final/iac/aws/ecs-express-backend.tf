@@ -4,26 +4,26 @@ locals {
 
 resource "aws_ecs_express_gateway_service" "backend" {
   service_name            = "${var.app_unique_id}-backend"
-  execution_role_arn      = local.persistent.ecs_execution_role_arn
-  infrastructure_role_arn = local.persistent.ecs_infrastructure_role_arn
+  execution_role_arn      = aws_iam_role.ecs_execution.arn
+  infrastructure_role_arn = aws_iam_role.ecs_infrastructure.arn
   cpu                     = "256"
   memory                  = "512"
   health_check_path       = "/api"
 
   network_configuration {
-    subnets         = [local.persistent.subnet_private_a_id, local.persistent.subnet_private_b_id]
-    security_groups = [local.persistent.sg_ecs_backend_id]
+    subnets         = [aws_subnet.private_a.id, aws_subnet.private_b.id]
+    security_groups = [aws_security_group.ecs_backend.id]
   }
 
   scaling_target {
-    min_task_count              = 1
-    max_task_count              = 2
-    auto_scaling_metric         = "AVERAGE_CPU"
-    auto_scaling_target_value   = 60
+    min_task_count            = 1
+    max_task_count            = 2
+    auto_scaling_metric       = "AVERAGE_CPU"
+    auto_scaling_target_value = 60
   }
 
   primary_container {
-    image          = "${local.persistent.ecr_backend_repository_url}:${var.image_tag}"
+    image          = "${aws_ecr_repository.backend.repository_url}:${var.image_tag}"
     container_port = 4000
 
     environment {
@@ -37,12 +37,6 @@ resource "aws_ecs_express_gateway_service" "backend" {
     environment {
       name  = "AUTH_APPLE_TEAM_ID"
       value = var.apple_team_id
-    }
-    # Web callback base URL uses the frontend proxy (frontend_url/backend)
-    # so the session cookie stays on the same domain throughout the OAuth flow.
-    environment {
-      name  = "AUTH_CALLBACK_BASE_URL"
-      value = "${local.frontend_url}/backend"
     }
     environment {
       name  = "AUTH_DISCORD_CLIENT_ID"
@@ -64,22 +58,9 @@ resource "aws_ecs_express_gateway_service" "backend" {
       name  = "AUTH_JWT_REFRESH_EXPIRATION"
       value = var.jwt_refresh_expiration
     }
-    # Native callback base URL uses the backend directly (native apps connect to the backend).
-    environment {
-      name  = "AUTH_NATIVE_CALLBACK_BASE_URL"
-      value = local.backend_base_url
-    }
     environment {
       name  = "AUTH_TWITTER_CLIENT_ID"
       value = var.twitter_client_id
-    }
-    environment {
-      name  = "CORS_ORIGIN"
-      value = local.frontend_url
-    }
-    environment {
-      name  = "FRONTEND_URL"
-      value = local.frontend_url
     }
     environment {
       name  = "NATIVE_APP_URL_SCHEME"
@@ -112,43 +93,43 @@ resource "aws_ecs_express_gateway_service" "backend" {
 
     secret {
       name       = "AUTH_APPLE_PRIVATE_KEY"
-      value_from = local.persistent.secret_apple_private_key_arn
+      value_from = aws_secretsmanager_secret.backend_apple_private_key.arn
     }
     secret {
       name       = "AUTH_DISCORD_CLIENT_SECRET"
-      value_from = local.persistent.secret_discord_client_secret_arn
+      value_from = aws_secretsmanager_secret.backend_discord_client_secret.arn
     }
     secret {
       name       = "AUTH_GITHUB_CLIENT_SECRET"
-      value_from = local.persistent.secret_gh_client_secret_arn
+      value_from = aws_secretsmanager_secret.backend_gh_client_secret.arn
     }
     secret {
       name       = "AUTH_GOOGLE_CLIENT_SECRET"
-      value_from = local.persistent.secret_google_client_secret_arn
+      value_from = aws_secretsmanager_secret.backend_google_client_secret.arn
     }
     secret {
       name       = "AUTH_JWT_REFRESH_SECRET"
-      value_from = local.persistent.secret_jwt_refresh_secret_arn
+      value_from = aws_secretsmanager_secret.backend_jwt_refresh_secret.arn
     }
     secret {
       name       = "AUTH_JWT_SECRET"
-      value_from = local.persistent.secret_jwt_secret_arn
+      value_from = aws_secretsmanager_secret.backend_jwt_secret.arn
     }
     secret {
       name       = "AUTH_SESSION_SECRET"
-      value_from = local.persistent.secret_session_secret_arn
+      value_from = aws_secretsmanager_secret.backend_session_secret.arn
     }
     secret {
       name       = "AUTH_TWITTER_CLIENT_SECRET"
-      value_from = local.persistent.secret_twitter_client_secret_arn
+      value_from = aws_secretsmanager_secret.backend_twitter_client_secret.arn
     }
     secret {
       name       = "DATABASE_URL"
-      value_from = local.persistent.secret_database_url_arn
+      value_from = aws_secretsmanager_secret.backend_database_url.arn
     }
     secret {
       name       = "SMTP_PASS"
-      value_from = local.persistent.secret_smtp_pass_arn
+      value_from = aws_secretsmanager_secret.backend_smtp_pass.arn
     }
   }
 }

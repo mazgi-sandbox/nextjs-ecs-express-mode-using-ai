@@ -22,8 +22,7 @@
 
 | Workflow | Description |
 |----------|-------------|
-| `iac.yaml` | Persistent layer: PR = plan, push to main = apply. |
-| `iac.ephemeral.yaml` | Ephemeral layer: manual dispatch (plan/apply/destroy). |
+| `iac.yaml` | IaC: PR = plan, push to main = apply. |
 
 ## Env file naming convention
 

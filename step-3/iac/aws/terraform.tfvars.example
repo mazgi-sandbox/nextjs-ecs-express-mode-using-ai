@@ -1,3 +1,6 @@
 app_unique_id = "oauth2-app"
 
 aws_region = "us-east-1"
+
+# Container image tag (registry URL is derived from ECR repository outputs)
+# image_tag = "latest"

@@ -1,4 +1,4 @@
-name: Reusable IaC Persistent
+name: Reusable IaC
 
 on:
   workflow_call:
@@ -46,6 +46,7 @@ jobs:
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+          TF_VAR_image_tag: ${{ vars.IMAGE_TAG || 'latest' }}
         run: |
           terraform -chdir=iac/aws plan -no-color -input=false 2>&1 | tee plan-output.txt
           {
@@ -60,4 +61,5 @@ jobs:
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+          TF_VAR_image_tag: ${{ vars.IMAGE_TAG || 'latest' }}
         run: terraform -chdir=iac/aws apply -auto-approve -input=false

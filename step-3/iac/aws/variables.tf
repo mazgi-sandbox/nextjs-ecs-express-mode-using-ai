@@ -8,3 +8,9 @@ variable "aws_region" {
   type        = string
   default     = "us-east-1"
 }
+
+variable "image_tag" {
+  description = "Container image tag (e.g. latest, sha-abc1234)"
+  type        = string
+  default     = "latest"
+}

@@ -1,12 +1,12 @@
 # Secrets Management
 
-AWS Secrets Manager stores the 10 backend secrets. The persistent Terraform layer creates the secret containers (empty); the ephemeral layer automatically populates `DATABASE_URL`. The remaining 9 secrets must be populated manually or via CI **before** deploying the ephemeral layer.
+AWS Secrets Manager stores the 10 backend secrets. Terraform creates the secret containers (empty) and automatically populates `DATABASE_URL`. The remaining 9 secrets must be populated manually or via CI **before** deploying.
 
 ## Secrets list
 
 | # | Environment variable | Description | How to generate / obtain |
 |---|----------------------|-------------|--------------------------|
-| 1 | `DATABASE_URL` | PostgreSQL connection string | **Auto-managed by Terraform** (ephemeral layer) |
+| 1 | `DATABASE_URL` | PostgreSQL connection string | **Auto-managed by Terraform** |
 | 2 | `AUTH_JWT_SECRET` | JWT access token signing secret | `openssl rand -base64 32` |
 | 3 | `AUTH_JWT_REFRESH_SECRET` | JWT refresh token signing secret | `openssl rand -base64 32` (must differ from `AUTH_JWT_SECRET`) |
 | 4 | `AUTH_SESSION_SECRET` | Express session secret (required for X/Twitter OAuth2 PKCE) | `openssl rand -base64 32` |
@@ -48,9 +48,8 @@ aws secretsmanager put-secret-value \
 
 ## Deployment workflow
 
-1. **`terraform apply` (persistent layer)** — creates secret containers with no values
+1. **`terraform apply`** — creates secret containers (empty), the database, ECR repos, ECS services, and auto-populates `DATABASE_URL`
 2. **Populate secrets** — set the 9 manually-managed secrets via CLI or cloud console (see commands above)
-3. **`terraform apply` (ephemeral layer)** — creates the database, auto-populates `DATABASE_URL`, and deploys containers that read all 10 secrets at startup
 
 ## Access control
 

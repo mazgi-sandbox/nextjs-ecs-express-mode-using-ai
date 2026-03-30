@@ -72,8 +72,6 @@ services:
       AWS_PROFILE: ${AWS_PROFILE:-}
       TF_VAR_app_unique_id: ${APP_UNIQUE_ID}
       TF_VAR_aws_region: ${AWS_REGION}
-      TF_VAR_aws_tf_state_bucket: ${AWS_TF_STATE_BUCKET}
-      TF_VAR_aws_tf_state_region: ${AWS_TF_STATE_REGION}
       TF_VAR_apple_client_id: ${AUTH_APPLE_CLIENT_ID}
       TF_VAR_apple_team_id: ${AUTH_APPLE_TEAM_ID}
       TF_VAR_apple_key_id: ${AUTH_APPLE_KEY_ID}

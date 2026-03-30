@@ -1,12 +1,12 @@
 resource "aws_db_subnet_group" "main" {
   name = var.app_unique_id
   subnet_ids = [
-    local.persistent.subnet_private_a_id,
-    local.persistent.subnet_private_b_id,
+    aws_subnet.private_a.id,
+    aws_subnet.private_b.id,
   ]
 
   tags = {
-    Name = "${var.app_unique_id}"
+    Name = var.app_unique_id
   }
 }
 
@@ -25,7 +25,7 @@ resource "aws_db_instance" "main" {
   storage_encrypted = true
 
   db_subnet_group_name   = aws_db_subnet_group.main.name
-  vpc_security_group_ids = [local.persistent.sg_rds_id]
+  vpc_security_group_ids = [aws_security_group.rds.id]
 
   publicly_accessible = false
   multi_az            = false

@@ -1,4 +1,4 @@
-name: Reusable IaC Persistent
+name: Reusable IaC
 
 on:
   workflow_call:
@@ -46,6 +46,21 @@ jobs:
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+          TF_VAR_database_password: ${{ secrets.TF_VAR_database_password }}
+          TF_VAR_image_tag: ${{ vars.IMAGE_TAG || 'latest' }}
+          TF_VAR_apple_client_id: ${{ vars.AUTH_APPLE_CLIENT_ID }}
+          TF_VAR_apple_team_id: ${{ vars.AUTH_APPLE_TEAM_ID }}
+          TF_VAR_apple_key_id: ${{ vars.AUTH_APPLE_KEY_ID }}
+          TF_VAR_discord_client_id: ${{ vars.AUTH_DISCORD_CLIENT_ID }}
+          TF_VAR_gh_client_id: ${{ vars.AUTH_GITHUB_CLIENT_ID }}
+          TF_VAR_google_oauth_client_id: ${{ vars.AUTH_GOOGLE_CLIENT_ID }}
+          TF_VAR_twitter_client_id: ${{ vars.AUTH_TWITTER_CLIENT_ID }}
+          TF_VAR_native_app_url_scheme: ${{ vars.NATIVE_APP_URL_SCHEME }}
+          TF_VAR_smtp_host: ${{ vars.SMTP_HOST }}
+          TF_VAR_smtp_port: ${{ vars.SMTP_PORT }}
+          TF_VAR_smtp_secure: ${{ vars.SMTP_SECURE }}
+          TF_VAR_smtp_user: ${{ vars.SMTP_USER }}
+          TF_VAR_smtp_from: ${{ vars.SMTP_FROM }}
         run: |
           terraform -chdir=iac/aws plan -no-color -input=false 2>&1 | tee plan-output.txt
           {
@@ -60,4 +75,19 @@ jobs:
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
+          TF_VAR_database_password: ${{ secrets.TF_VAR_database_password }}
+          TF_VAR_image_tag: ${{ vars.IMAGE_TAG || 'latest' }}
+          TF_VAR_apple_client_id: ${{ vars.AUTH_APPLE_CLIENT_ID }}
+          TF_VAR_apple_team_id: ${{ vars.AUTH_APPLE_TEAM_ID }}
+          TF_VAR_apple_key_id: ${{ vars.AUTH_APPLE_KEY_ID }}
+          TF_VAR_discord_client_id: ${{ vars.AUTH_DISCORD_CLIENT_ID }}
+          TF_VAR_gh_client_id: ${{ vars.AUTH_GITHUB_CLIENT_ID }}
+          TF_VAR_google_oauth_client_id: ${{ vars.AUTH_GOOGLE_CLIENT_ID }}
+          TF_VAR_twitter_client_id: ${{ vars.AUTH_TWITTER_CLIENT_ID }}
+          TF_VAR_native_app_url_scheme: ${{ vars.NATIVE_APP_URL_SCHEME }}
+          TF_VAR_smtp_host: ${{ vars.SMTP_HOST }}
+          TF_VAR_smtp_port: ${{ vars.SMTP_PORT }}
+          TF_VAR_smtp_secure: ${{ vars.SMTP_SECURE }}
+          TF_VAR_smtp_user: ${{ vars.SMTP_USER }}
+          TF_VAR_smtp_from: ${{ vars.SMTP_FROM }}
         run: terraform -chdir=iac/aws apply -auto-approve -input=false

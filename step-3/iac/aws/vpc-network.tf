@@ -101,7 +101,7 @@ resource "aws_route_table_association" "public_b" {
   route_table_id = aws_route_table.public.id
 }
 
-# Private route table — NAT gateway route is added by the ephemeral layer.
+# Private route table — NAT gateway route is added in nat.tf.
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
@@ -124,34 +124,6 @@ resource "aws_route_table_association" "private_b" {
 # Security groups
 # -----------------------------------------------------------------------------
 
-resource "aws_security_group" "ecs_backend" {
-  name_prefix = "${var.app_unique_id}-ecs-backend-"
-  description = "ECS backend tasks"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port   = 4000
-    to_port     = 4000
-    protocol    = "tcp"
-    cidr_blocks = [aws_vpc.main.cidr_block]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.app_unique_id}-ecs-backend"
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 resource "aws_security_group" "ecs_web" {
   name_prefix = "${var.app_unique_id}-ecs-web-"
   description = "ECS web tasks"
@@ -173,34 +145,6 @@ resource "aws_security_group" "ecs_web" {
 
   tags = {
     Name = "${var.app_unique_id}-ecs-web"
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-resource "aws_security_group" "rds" {
-  name_prefix = "${var.app_unique_id}-rds-"
-  description = "RDS PostgreSQL"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ecs_backend.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.app_unique_id}-rds"
   }
 
   lifecycle {

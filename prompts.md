@@ -19,3 +19,5 @@
 - could you remove all backend related files in step-3?
 - could you remove dns zone "main" and resources depends on?
 - also remove dns zone main and base domain name related resoures or entries in step-99?
+- could you merge step-99 iac ephemeral layer into iac/aws/?
+- I've merged iac/aws/ephemeral into iac/aws on step-99. could you reflect it in step-3?

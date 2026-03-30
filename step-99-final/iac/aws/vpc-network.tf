@@ -101,7 +101,7 @@ resource "aws_route_table_association" "public_b" {
   route_table_id = aws_route_table.public.id
 }
 
-# Private route table — NAT gateway route is added by the ephemeral layer.
+# Private route table — NAT gateway route is added in nat.tf.
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
