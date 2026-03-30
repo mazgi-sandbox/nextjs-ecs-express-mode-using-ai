@@ -6,3 +6,4 @@
 - it uses only AWS. could you remove Azure and Google Cloud related files such as *.tf?
 - I've updated the template repo: https://github.com/mazgi/template-containerized-oauth2-project. could you refrect it?
 - could you import only new features match this project from the template repo?
+- could you move all directories except .claude, .git, LICENSE, prompts.md into step-99-final dir?
