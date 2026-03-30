@@ -25,3 +25,7 @@
 - could you replace an empty NestJS app with step-4/backend?
 - could you replace web/ in step-4 with step-3's ones?
 - no needs DB in step-4. could you remove it?
+- could you write prompts in step-2/prompts.md that need to you growth it from step-2 to step-3?
+- could you write prompts in step-3/prompts.md that need to you growth it from step-3 to step-4?
+- could you create step-0 dir and write prompts in step-0/prompts.md that need to you growth it from step-0 to step-1?
+- could you remove social account authentication flows from step-99?

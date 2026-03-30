@@ -1,0 +1,12 @@
+# Prompts to grow step-3 into step-4
+
+- Create a minimal NestJS backend app under backend/ with a single GET `/` endpoint that returns "Hello, NestJS!". Include: `src/main.ts` (bootstrap on port 4000 from `PORT` env var), `src/app.module.ts`, `src/app.controller.ts`, `src/app.service.ts`, `package.json` (core NestJS deps only: `@nestjs/common`, `@nestjs/core`, `@nestjs/platform-express`, `reflect-metadata`, `rxjs`), `tsconfig.json`, `tsconfig.build.json`, `nest-cli.json`, and `.gitignore`.
+- Add a backend dev Dockerfile at Dockerfiles.d/backend/Dockerfile based on `node:24-bookworm-slim`. Install `openssl` and `git`, enable corepack, install `npm-check-updates` and `sort-package-json` globally. Create a developer user matching host UID/GID (remove default node user first). Prepare pnpm. Clear the default entrypoint.
+- Add a backend production build Dockerfile at Dockerfiles.d/backend-build/Dockerfile as a multi-stage build: install deps with `pnpm install --frozen-lockfile`, build with `nest build`, then create a slim runtime image with only production deps and the `dist/` output. Accept a `GIT_SHA` build arg.
+- Add a `backend` service to compose.yaml that builds from Dockerfiles.d/backend/Dockerfile, runs `pnpm install && pnpm dev`, listens on port 4000, includes a TCP healthcheck on port 4000, and mounts the project root as a volume.
+- Update the `web` service in compose.yaml to depend on the backend being healthy (`depends_on: backend: condition: service_healthy`) and add `BACKEND_URL: http://backend:4000` as an environment variable. Also add `BACKEND_URL: http://backend:4000` to the `web-e2e-tests` service.
+- Add an ECR repository for the backend image in iac/aws/ecr.tf. Add a backend security group (port 4000) in iac/aws/vpc-network.tf. Add an ECS Express gateway service for the backend in iac/aws/ecs-express-backend.tf (port 4000, private subnets, backend security group, minimal env with just PORT).
+- Add ECR and ECS outputs for the backend in iac/aws/outputs.tf: `ecr_backend_repository_url` and `backend_url`.
+- Add GitHub Actions workflows: `_reusable-backend-build.yaml` (build and push backend image to GHCR and optionally ECR), `backend.build.yaml` (triggers on backend/ or iac changes), and `backend.e2e-tests.yaml` (runs backend E2E tests via docker compose).
+- Add docs: `docs/local-development.md` (how to start backend + web locally, run e2e tests) and `docs/git-sha-display.md` (how backend and web expose the git SHA).
+- Update README.md to reflect step-4 scope: backend + web + e2e tests + IaC + CI/CD.
