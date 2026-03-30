@@ -34,3 +34,6 @@
 - could you write prompts in step-4/prompts.md that need to you growth it from step-4 to step-5?
 - could you copy step-99-final as step-6 dir?
 - could you remove email related features from step-6 web and backend? but preserve user authencication.
+- could you write prompts in step-5/prompts.md that need to you growth it from step-5 to step-6?
+- could you write prompts in step-6/prompts.md that need to you growth it from step-6 to step-99?
+- could you rename prompts.md to meta.prompts.md?
