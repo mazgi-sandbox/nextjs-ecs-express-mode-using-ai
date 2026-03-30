@@ -7,3 +7,5 @@
 - I've updated the template repo: https://github.com/mazgi/template-containerized-oauth2-project. could you refrect it?
 - could you import only new features match this project from the template repo?
 - could you move all directories except .claude, .git, LICENSE, prompts.md into step-99-final dir?
+- could you copy step-99-final as step-1 dir?
+- could you remove all github actions, backend, and iac related files in step-1?

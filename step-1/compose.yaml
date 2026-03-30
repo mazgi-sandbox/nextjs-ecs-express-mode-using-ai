@@ -1,0 +1,29 @@
+services:
+  web:
+    build:
+      context: ./web/app
+      dockerfile: ../../Dockerfiles.d/web/Dockerfile
+      args:
+        GID: "${GID:-1000}"
+        UID: "${UID:-1000}"
+    command:
+      - sh
+      - -c
+      - |
+        npm-check-updates --upgrade
+        sort-package-json
+        pnpm install
+        pnpm audit --fix
+        pnpm install
+        pnpm dev
+    env_file:
+      - .env
+    environment:
+      # Point the pnpm store to the bind-mounted volume so it persists across
+      # container rebuilds and is shared between containers.
+      PNPM_HOME: /work/.pnpm-store
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/work
+    working_dir: /work/web/app
