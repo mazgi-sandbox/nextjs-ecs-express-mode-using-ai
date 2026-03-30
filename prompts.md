@@ -32,3 +32,5 @@
 - could you copy step-99-final as step-5 dir?
 - could you remove features except items from step-5 web and backend?
 - could you write prompts in step-4/prompts.md that need to you growth it from step-4 to step-5?
+- could you copy step-99-final as step-6 dir?
+- could you remove email related features from step-6 web and backend? but preserve user authencication.

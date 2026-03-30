@@ -1,0 +1,18 @@
+# Environment
+*.env
+!.example.*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node.js / pnpm
+node_modules/
+.pnpm-store/
+
+# Generated build info
+apple/app/BuildConfig.generated.swift
+
+# VSCode
+.vscode/
