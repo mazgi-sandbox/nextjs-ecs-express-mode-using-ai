@@ -21,3 +21,7 @@
 - also remove dns zone main and base domain name related resoures or entries in step-99?
 - could you merge step-99 iac ephemeral layer into iac/aws/?
 - I've merged iac/aws/ephemeral into iac/aws on step-99. could you reflect it in step-3?
+- could you copy step-99-final as step-4 dir?
+- could you replace an empty NestJS app with step-4/backend?
+- could you replace web/ in step-4 with step-3's ones?
+- no needs DB in step-4. could you remove it?
