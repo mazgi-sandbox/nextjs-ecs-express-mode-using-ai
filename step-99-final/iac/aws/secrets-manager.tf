@@ -26,36 +26,6 @@ resource "aws_secretsmanager_secret" "backend_session_secret" {
   recovery_window_in_days = 0
 }
 
-resource "aws_secretsmanager_secret" "backend_apple_private_key" {
-  name                    = "${var.app_unique_id}/backend/AUTH_APPLE_PRIVATE_KEY"
-  description             = "Apple Sign-in private key (.p8)"
-  recovery_window_in_days = 0
-}
-
-resource "aws_secretsmanager_secret" "backend_discord_client_secret" {
-  name                    = "${var.app_unique_id}/backend/AUTH_DISCORD_CLIENT_SECRET"
-  description             = "Discord OAuth2 client secret"
-  recovery_window_in_days = 0
-}
-
-resource "aws_secretsmanager_secret" "backend_gh_client_secret" {
-  name                    = "${var.app_unique_id}/backend/AUTH_GITHUB_CLIENT_SECRET"
-  description             = "GitHub OAuth App client secret"
-  recovery_window_in_days = 0
-}
-
-resource "aws_secretsmanager_secret" "backend_google_client_secret" {
-  name                    = "${var.app_unique_id}/backend/AUTH_GOOGLE_CLIENT_SECRET"
-  description             = "Google OAuth2 client secret"
-  recovery_window_in_days = 0
-}
-
-resource "aws_secretsmanager_secret" "backend_twitter_client_secret" {
-  name                    = "${var.app_unique_id}/backend/AUTH_TWITTER_CLIENT_SECRET"
-  description             = "X (Twitter) OAuth2 client secret"
-  recovery_window_in_days = 0
-}
-
 resource "aws_secretsmanager_secret" "backend_smtp_pass" {
   name                    = "${var.app_unique_id}/backend/SMTP_PASS"
   description             = "SMTP password (e.g. Amazon SES IAM SMTP credential)"
@@ -81,11 +51,6 @@ resource "aws_iam_role_policy" "ecs_execution_secrets" {
           aws_secretsmanager_secret.backend_jwt_secret.arn,
           aws_secretsmanager_secret.backend_jwt_refresh_secret.arn,
           aws_secretsmanager_secret.backend_session_secret.arn,
-          aws_secretsmanager_secret.backend_apple_private_key.arn,
-          aws_secretsmanager_secret.backend_discord_client_secret.arn,
-          aws_secretsmanager_secret.backend_gh_client_secret.arn,
-          aws_secretsmanager_secret.backend_google_client_secret.arn,
-          aws_secretsmanager_secret.backend_twitter_client_secret.arn,
           aws_secretsmanager_secret.backend_smtp_pass.arn,
         ]
       },

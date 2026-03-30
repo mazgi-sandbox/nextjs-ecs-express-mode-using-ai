@@ -4,7 +4,6 @@ import { Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { OAuthProviders } from '../oauth-providers';
 
 export type UserRecord = {
   id: string;
@@ -15,18 +14,6 @@ export type UserRecord = {
   createdAt: Date;
   updatedAt: Date;
 };
-
-export type SocialAccountRow = { provider: string; providerId: string; email: string | null };
-
-export type UserWithSocial = UserRecord & {
-  socialAccounts: SocialAccountRow[];
-};
-
-export const SOCIAL_INCLUDES = {
-  socialAccounts: true,
-} as const;
-
-export { OAuthProviders, type OAuthProvider } from '../oauth-providers';
 
 @Injectable()
 export class UsersService {
@@ -40,37 +27,14 @@ export class UsersService {
   async getMe(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: SOCIAL_INCLUDES,
     });
     if (!user) {
       throw new UnauthorizedException();
     }
-    const { passwordHash, emailVerificationToken, emailVerificationExpires, totpSecret, recoveryCodes, socialAccounts, ...result } = user;
+    const { passwordHash, emailVerificationToken, emailVerificationExpires, totpSecret, recoveryCodes, ...result } = user;
     return {
       ...result,
-      ...this.socialToFlat(user),
       hasPassword: passwordHash != null,
-    };
-  }
-
-  socialToFlat(user: UserWithSocial) {
-    const socialEmails: string[] = [];
-    const seen = new Set<string>();
-    const byProvider = new Map<string, SocialAccountRow>();
-    for (const acct of user.socialAccounts) {
-      byProvider.set(acct.provider, acct);
-      if (acct.email && !acct.email.endsWith('.invalid') && !seen.has(acct.email)) {
-        seen.add(acct.email);
-        socialEmails.push(acct.email);
-      }
-    }
-    return {
-      appleId: byProvider.get(OAuthProviders.Apple)?.providerId ?? null,
-      githubId: byProvider.get(OAuthProviders.GitHub)?.providerId ?? null,
-      googleId: byProvider.get(OAuthProviders.Google)?.providerId ?? null,
-      twitterId: byProvider.get(OAuthProviders.Twitter)?.providerId ?? null,
-      discordId: byProvider.get(OAuthProviders.Discord)?.providerId ?? null,
-      socialEmails,
     };
   }
 

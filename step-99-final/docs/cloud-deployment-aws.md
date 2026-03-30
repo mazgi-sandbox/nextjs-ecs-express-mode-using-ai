@@ -71,10 +71,8 @@ Edit `iac/aws/terraform.tfvars`:
 
 - `aws_region` — your AWS region (default: `us-east-1`)
 - `database_password` — generate with `openssl rand -base64 32`
-- OAuth2 client IDs (`apple_client_id`, `discord_client_id`, `gh_client_id`, `google_oauth_client_id`, `twitter_client_id`) and Apple config (`apple_team_id`, `apple_key_id`)
-- `native_app_url_scheme` — e.g. `oauth2app`
 
-> **Note:** JWT secrets, session secret, and OAuth2 client secrets are stored directly in Secrets Manager — populate them externally (CLI or AWS Console), not via Terraform.
+> **Note:** JWT secrets, session secret, and SMTP password are stored directly in Secrets Manager — populate them externally (CLI or AWS Console), not via Terraform.
 
 ## 3. Deploy infrastructure and push images
 

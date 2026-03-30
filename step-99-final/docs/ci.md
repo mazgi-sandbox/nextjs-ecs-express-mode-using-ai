@@ -66,26 +66,7 @@ Replace `Staging` with `Production` for the production environment. See [Env fil
 |--------|-------------|
 | `AUTH_JWT_SECRET` | Access token signing — `openssl rand -base64 32` |
 | `AUTH_JWT_REFRESH_SECRET` | Refresh token signing (must differ) |
-| `AUTH_APPLE_PRIVATE_KEY` | Apple `.p8` key (newlines → `\n`) |
-| `AUTH_DISCORD_CLIENT_SECRET` | Discord OAuth2 client secret |
-| `AUTH_GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret |
-| `AUTH_GOOGLE_CLIENT_SECRET` | Google OAuth2 client secret |
-| `AUTH_TWITTER_CLIENT_SECRET` | X (Twitter) OAuth2 client secret |
-| `AUTH_SESSION_SECRET` | Session cookies (Twitter PKCE) — `openssl rand -base64 32` |
-
-All OAuth2 credentials (secrets + variables) are required so the backend starts.
-
-### E2E test variables
-
-| Variable | Description |
-|----------|-------------|
-| `AUTH_APPLE_CLIENT_ID` | Apple Services ID |
-| `AUTH_APPLE_TEAM_ID` | Apple Developer Team ID |
-| `AUTH_APPLE_KEY_ID` | Apple Sign In key ID |
-| `AUTH_DISCORD_CLIENT_ID` | Discord OAuth2 client ID |
-| `AUTH_GITHUB_CLIENT_ID` | GitHub OAuth App client ID |
-| `AUTH_GOOGLE_CLIENT_ID` | Google OAuth2 client ID |
-| `AUTH_TWITTER_CLIENT_ID` | X (Twitter) OAuth2 client ID |
+| `AUTH_SESSION_SECRET` | Session cookies — `openssl rand -base64 32` |
 
 ### IaC secrets
 

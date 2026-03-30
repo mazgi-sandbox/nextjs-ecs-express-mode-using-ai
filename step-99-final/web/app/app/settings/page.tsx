@@ -6,21 +6,13 @@ import { useTranslations } from 'next-intl'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTheme, Theme } from '../../contexts/ThemeContext'
 import { AppHeader } from '../../components/AppHeader'
-import { unlinkProvider, deleteAccount, updateEmail, resendVerification, forgotPassword, totpSetup, totpEnable, totpDisable, totpRegenerateRecoveryCodes } from '../../lib/api'
+import { deleteAccount, updateEmail, resendVerification, forgotPassword, totpSetup, totpEnable, totpDisable, totpRegenerateRecoveryCodes } from '../../lib/api'
 
 const THEME_OPTIONS: { value: Theme; labelKey: string }[] = [
   { value: 'system', labelKey: 'themeSystem' },
   { value: 'light', labelKey: 'themeLight' },
   { value: 'dark', labelKey: 'themeDark' },
 ]
-
-const PROVIDERS = [
-  { key: 'apple', label: 'Apple' },
-  { key: 'discord', label: 'Discord' },
-  { key: 'github', label: 'GitHub' },
-  { key: 'google', label: 'Google' },
-  { key: 'twitter', label: 'X (Twitter)' },
-] as const
 
 export default function SettingsPage() {
   const t = useTranslations('Settings')
@@ -55,25 +47,6 @@ export default function SettingsPage() {
   }, [loading])
 
   if (loading || !user) return null
-
-  const linkedProviders: Record<string, boolean> = {
-    apple: !!user.appleId,
-    discord: !!user.discordId,
-    github: !!user.githubId,
-    google: !!user.googleId,
-    twitter: !!user.twitterId,
-  }
-
-  async function handleUnlink(provider: string) {
-    if (!accessToken) return
-    setError(null)
-    try {
-      await unlinkProvider(accessToken, provider)
-      await refreshUser()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t('errorFallback'))
-    }
-  }
 
   async function handleDeleteAccount() {
     if (!accessToken) return
@@ -202,10 +175,6 @@ export default function SettingsPage() {
 
   function handleEmailSelect(e: React.ChangeEvent<HTMLSelectElement>) {
     setEmailInput(e.target.value)
-  }
-
-  function linkUrl(provider: string): string {
-    return `/backend/auth/link/${provider}?token=${accessToken}`
   }
 
   return (
@@ -431,29 +400,6 @@ export default function SettingsPage() {
               </div>
             </>
           )}
-        </div>
-
-        <div className="user-card" style={{ marginTop: '1.5rem' }}>
-          <h3 className="settings-section-title">{t('linkedAccounts')}</h3>
-          <div className="linked-accounts-list">
-            {PROVIDERS.map(({ key, label }) => (
-              <div key={key} className="linked-account-row">
-                <span className="linked-account-provider">{label}</span>
-                {linkedProviders[key] ? (
-                  <button
-                    className="btn-danger"
-                    onClick={() => handleUnlink(key)}
-                  >
-                    {t('unlink')}
-                  </button>
-                ) : (
-                  <a href={linkUrl(key)} className="btn-primary btn-link-provider">
-                    {t('link')}
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
         </div>
 
         <div className="user-card" style={{ marginTop: '1.5rem' }}>

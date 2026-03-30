@@ -124,13 +124,6 @@ export function updateEmail(accessToken: string, email: string): Promise<User> {
   })
 }
 
-export function unlinkProvider(accessToken: string, provider: string): Promise<User> {
-  return request(`/auth/link/${provider}`, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${accessToken}` },
-  })
-}
-
 export async function deleteAccount(accessToken: string): Promise<void> {
   const res = await fetch(`${API_BASE}/auth/account`, {
     method: 'DELETE',

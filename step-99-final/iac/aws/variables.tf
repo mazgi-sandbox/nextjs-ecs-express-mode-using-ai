@@ -64,61 +64,6 @@ variable "jwt_refresh_expiration" {
 }
 
 # -----------------------------------------------------------------------------
-# OAuth2 — Apple
-# -----------------------------------------------------------------------------
-
-variable "apple_client_id" {
-  description = "Apple Services ID"
-  type        = string
-}
-
-variable "apple_team_id" {
-  description = "Apple Team ID"
-  type        = string
-}
-
-variable "apple_key_id" {
-  description = "Apple Key ID"
-  type        = string
-}
-
-# -----------------------------------------------------------------------------
-# OAuth2 — Discord
-# -----------------------------------------------------------------------------
-
-variable "discord_client_id" {
-  description = "Discord OAuth2 Client ID"
-  type        = string
-}
-
-# -----------------------------------------------------------------------------
-# OAuth2 — GitHub
-# -----------------------------------------------------------------------------
-
-variable "gh_client_id" {
-  description = "GitHub OAuth App Client ID"
-  type        = string
-}
-
-# -----------------------------------------------------------------------------
-# OAuth2 — Google
-# -----------------------------------------------------------------------------
-
-variable "google_oauth_client_id" {
-  description = "Google OAuth2 Client ID"
-  type        = string
-}
-
-# -----------------------------------------------------------------------------
-# OAuth2 — X (Twitter)
-# -----------------------------------------------------------------------------
-
-variable "twitter_client_id" {
-  description = "X (Twitter) OAuth2 Client ID"
-  type        = string
-}
-
-# -----------------------------------------------------------------------------
 # SMTP
 # -----------------------------------------------------------------------------
 
@@ -146,14 +91,5 @@ variable "smtp_user" {
 
 variable "smtp_from" {
   description = "From address for outgoing emails"
-  type        = string
-}
-
-# -----------------------------------------------------------------------------
-# Native app
-# -----------------------------------------------------------------------------
-
-variable "native_app_url_scheme" {
-  description = "Native app URL scheme for OAuth2 callbacks"
   type        = string
 }

@@ -11,38 +11,9 @@ import * as OTPAuth from 'otpauth';
 import { I18nContext } from 'nestjs-i18n';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
-import { UsersService, UserRecord, UserWithSocial, SOCIAL_INCLUDES, OAuthProvider, OAuthProviders } from '../users/users.service';
+import { UsersService, UserRecord } from '../users/users.service';
 import { SignUpDto } from './dto/signup.dto';
 import { SignInDto } from './dto/signin.dto';
-import { AppleProfile } from './strategies/apple.strategy';
-import { GoogleProfile } from './strategies/google.strategy';
-import { TwitterProfile } from './strategies/twitter.strategy';
-import { GithubProfile } from './strategies/github.strategy';
-import { DiscordProfile } from './strategies/discord.strategy';
-
-type OAuthProfile = AppleProfile | DiscordProfile | GithubProfile | GoogleProfile | TwitterProfile;
-
-/** Maps provider name to the profile's provider-specific ID field and fallback email domain. */
-const PROVIDER_CONFIG: Record<OAuthProvider, { idKey: string; emailDomain: string }> = {
-  [OAuthProviders.Apple]:   { idKey: 'appleId',   emailDomain: 'apple.invalid' },
-  [OAuthProviders.Discord]: { idKey: 'discordId', emailDomain: 'discord.invalid' },
-  [OAuthProviders.GitHub]:  { idKey: 'githubId',  emailDomain: 'github.invalid' },
-  [OAuthProviders.Google]:  { idKey: 'googleId',  emailDomain: '' },
-  [OAuthProviders.Twitter]: { idKey: 'twitterId', emailDomain: 'x.invalid' },
-};
-
-function getProviderId(provider: OAuthProvider, profile: OAuthProfile): string {
-  return (profile as any)[PROVIDER_CONFIG[provider].idKey];
-}
-
-function getProfileEmail(profile: OAuthProfile): string | null {
-  return profile.email ?? null;
-}
-
-function getFallbackEmail(provider: OAuthProvider, providerId: string): string | null {
-  const domain = PROVIDER_CONFIG[provider].emailDomain;
-  return domain ? `${provider}_${providerId}@${domain}` : null;
-}
 
 @Injectable()
 export class AuthService {
@@ -188,75 +159,6 @@ export class AuthService {
     return this.buildTokenResponse(user);
   }
 
-  async findOrCreateSocialUser(provider: OAuthProvider, profile: OAuthProfile) {
-    const providerId = getProviderId(provider, profile);
-    const profileEmail = getProfileEmail(profile);
-
-    // 1. Look up by providerId (most stable identifier)
-    const social = await this.prisma.socialAccount.findUnique({
-      where: { provider_providerId: { provider, providerId } },
-      include: { user: true },
-    });
-    if (social) {
-      return this.buildTokenResponse(social.user);
-    }
-
-    // 2. Fall back to email lookup, and link to existing account
-    if (profileEmail) {
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: profileEmail },
-      });
-      if (existingUser) {
-        await this.prisma.socialAccount.create({
-          data: { provider, providerId, email: profileEmail, userId: existingUser.id },
-        });
-        return this.buildTokenResponse(existingUser);
-      }
-    }
-
-    // 3. Create new user with linked social account
-    const email = profileEmail ?? getFallbackEmail(provider, providerId)!;
-    const user = await this.prisma.user.create({
-      data: {
-        email,
-        name: profile.name,
-        passwordHash: null,
-        emailVerified: !email.endsWith('.invalid'),
-        socialAccounts: { create: { provider, providerId, email: profileEmail } },
-      },
-    });
-
-    return this.buildTokenResponse(user);
-  }
-
-  async verifyAppleToken(
-    identityToken: string,
-    fullName?: { givenName?: string; familyName?: string },
-  ) {
-    // Decode the Apple identity token JWT (without signature verification for stub)
-    const decoded = this.jwtService.decode(identityToken) as {
-      sub?: string;
-      email?: string;
-    } | null;
-
-    if (!decoded?.sub) {
-      throw new UnauthorizedException(this.t('auth.INVALID_APPLE_TOKEN'));
-    }
-
-    const name = [fullName?.givenName, fullName?.familyName]
-      .filter(Boolean)
-      .join(' ')
-      .trim() || null;
-
-    const profile: AppleProfile = {
-      appleId: decoded.sub,
-      email: decoded.email ?? null,
-      name,
-    };
-
-    return this.findOrCreateSocialUser(OAuthProviders.Apple, profile);
-  }
-
   async updateEmail(userId: string, newEmail: string) {
     const existing = await this.prisma.user.findUnique({
       where: { email: newEmail },
@@ -276,15 +178,13 @@ export class AuthService {
         emailVerificationToken: token,
         emailVerificationExpires: expires,
       },
-      include: SOCIAL_INCLUDES,
     });
 
     await this.mailService.sendVerificationEmail(newEmail, token);
 
-    const { passwordHash, emailVerificationToken, emailVerificationExpires, totpSecret: _ts, recoveryCodes: _rc, socialAccounts, ...result } = user;
+    const { passwordHash, emailVerificationToken, emailVerificationExpires, totpSecret: _ts, recoveryCodes: _rc, ...result } = user;
     return {
       ...result,
-      ...this.usersService.socialToFlat(user),
       hasPassword: passwordHash != null,
     };
   }
@@ -342,25 +242,6 @@ export class AuthService {
     return { message: this.t('auth.PASSWORD_RESET_SUCCESS') };
   }
 
-  // --- Account linking ---
-
-  async linkSocial(provider: OAuthProvider, userId: string, profile: OAuthProfile) {
-    const providerId = getProviderId(provider, profile);
-    const profileEmail = getProfileEmail(profile);
-
-    const existing = await this.prisma.socialAccount.findUnique({
-      where: { provider_providerId: { provider, providerId } },
-    });
-    if (existing && existing.userId !== userId) {
-      throw new ConflictException(this.t('auth.SOCIAL_ALREADY_LINKED', { provider }));
-    }
-    await this.prisma.socialAccount.upsert({
-      where: { provider_userId: { provider, userId } },
-      create: { provider, providerId, email: profileEmail, userId },
-      update: { providerId, email: profileEmail },
-    });
-  }
-
   // --- Account deletion ---
 
   async deleteAccount(userId: string): Promise<void> {
@@ -371,25 +252,6 @@ export class AuthService {
       throw new UnauthorizedException();
     }
     await this.prisma.user.delete({ where: { id: userId } });
-  }
-
-  // --- Account unlinking ---
-
-  async unlinkSocial(provider: OAuthProvider, userId: string) {
-    await this.ensureAlternativeAuthExists(userId, provider);
-    await this.prisma.socialAccount.deleteMany({ where: { provider, userId } });
-  }
-
-  private async ensureAlternativeAuthExists(userId: string, excludeProvider: OAuthProvider) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-      include: SOCIAL_INCLUDES,
-    });
-    if (!user) throw new UnauthorizedException();
-    const hasOtherSocial = user.socialAccounts.some(a => a.provider !== excludeProvider);
-    if (!user.passwordHash && !hasOtherSocial) {
-      throw new ConflictException(this.t('auth.CANNOT_UNLINK_ONLY_AUTH'));
-    }
   }
 
   private async buildTokenResponse(user: UserRecord) {
@@ -407,21 +269,16 @@ export class AuthService {
       expiresIn: (process.env.AUTH_JWT_REFRESH_EXPIRATION ?? '7d') as unknown as number,
     });
 
-    // Query social accounts for flat response
-    const userWithSocial = await this.prisma.user.findUnique({
+    const fullUser = await this.prisma.user.findUnique({
       where: { id: user.id },
-      include: SOCIAL_INCLUDES,
     });
 
-    const { passwordHash: _pw, emailVerificationToken: _evt, emailVerificationExpires: _eve, passwordResetToken: _prt, passwordResetExpires: _pre, totpSecret: _ts, recoveryCodes: _rc, socialAccounts, ...userWithoutPassword } = userWithSocial!;
+    const { passwordHash: _pw, emailVerificationToken: _evt, emailVerificationExpires: _eve, passwordResetToken: _prt, passwordResetExpires: _pre, totpSecret: _ts, recoveryCodes: _rc, ...userWithoutPassword } = fullUser!;
 
     return {
       accessToken,
       refreshToken,
-      user: {
-        ...userWithoutPassword,
-        ...this.usersService.socialToFlat(userWithSocial as UserWithSocial),
-      },
+      user: userWithoutPassword,
     };
   }
 

@@ -10,22 +10,5 @@ aws_region = "us-east-1"
 # at runtime — never exposed as a plaintext ECS environment variable.
 database_password = "CHANGE_ME"
 
-# JWT, Session, and OAuth2 client secrets are stored directly in Secrets Manager.
+# JWT, Session, and SMTP secrets are stored directly in Secrets Manager.
 # Populate them externally (CI or AWS Console) — not managed by Terraform.
-
-# OAuth2 — Apple (non-sensitive config only)
-apple_client_id = ""
-apple_team_id   = ""
-apple_key_id    = ""
-
-# OAuth2 — Discord
-discord_client_id = ""
-
-# OAuth2 — GitHub
-gh_client_id = ""
-
-# OAuth2 — Google
-google_oauth_client_id = ""
-
-# OAuth2 — X (Twitter)
-twitter_client_id = ""

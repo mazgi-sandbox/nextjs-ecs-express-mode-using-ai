@@ -27,44 +27,12 @@ resource "aws_ecs_express_gateway_service" "backend" {
     container_port = 4000
 
     environment {
-      name  = "AUTH_APPLE_CLIENT_ID"
-      value = var.apple_client_id
-    }
-    environment {
-      name  = "AUTH_APPLE_KEY_ID"
-      value = var.apple_key_id
-    }
-    environment {
-      name  = "AUTH_APPLE_TEAM_ID"
-      value = var.apple_team_id
-    }
-    environment {
-      name  = "AUTH_DISCORD_CLIENT_ID"
-      value = var.discord_client_id
-    }
-    environment {
-      name  = "AUTH_GITHUB_CLIENT_ID"
-      value = var.gh_client_id
-    }
-    environment {
-      name  = "AUTH_GOOGLE_CLIENT_ID"
-      value = var.google_oauth_client_id
-    }
-    environment {
       name  = "AUTH_JWT_ACCESS_EXPIRATION"
       value = var.jwt_access_expiration
     }
     environment {
       name  = "AUTH_JWT_REFRESH_EXPIRATION"
       value = var.jwt_refresh_expiration
-    }
-    environment {
-      name  = "AUTH_TWITTER_CLIENT_ID"
-      value = var.twitter_client_id
-    }
-    environment {
-      name  = "NATIVE_APP_URL_SCHEME"
-      value = var.native_app_url_scheme
     }
     environment {
       name  = "PORT"
@@ -92,22 +60,6 @@ resource "aws_ecs_express_gateway_service" "backend" {
     }
 
     secret {
-      name       = "AUTH_APPLE_PRIVATE_KEY"
-      value_from = aws_secretsmanager_secret.backend_apple_private_key.arn
-    }
-    secret {
-      name       = "AUTH_DISCORD_CLIENT_SECRET"
-      value_from = aws_secretsmanager_secret.backend_discord_client_secret.arn
-    }
-    secret {
-      name       = "AUTH_GITHUB_CLIENT_SECRET"
-      value_from = aws_secretsmanager_secret.backend_gh_client_secret.arn
-    }
-    secret {
-      name       = "AUTH_GOOGLE_CLIENT_SECRET"
-      value_from = aws_secretsmanager_secret.backend_google_client_secret.arn
-    }
-    secret {
       name       = "AUTH_JWT_REFRESH_SECRET"
       value_from = aws_secretsmanager_secret.backend_jwt_refresh_secret.arn
     }
@@ -118,10 +70,6 @@ resource "aws_ecs_express_gateway_service" "backend" {
     secret {
       name       = "AUTH_SESSION_SECRET"
       value_from = aws_secretsmanager_secret.backend_session_secret.arn
-    }
-    secret {
-      name       = "AUTH_TWITTER_CLIENT_SECRET"
-      value_from = aws_secretsmanager_secret.backend_twitter_client_secret.arn
     }
     secret {
       name       = "DATABASE_URL"

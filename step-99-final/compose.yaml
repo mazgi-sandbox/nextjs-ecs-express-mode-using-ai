@@ -72,13 +72,6 @@ services:
       AWS_PROFILE: ${AWS_PROFILE:-}
       TF_VAR_app_unique_id: ${APP_UNIQUE_ID}
       TF_VAR_aws_region: ${AWS_REGION}
-      TF_VAR_apple_client_id: ${AUTH_APPLE_CLIENT_ID}
-      TF_VAR_apple_team_id: ${AUTH_APPLE_TEAM_ID}
-      TF_VAR_apple_key_id: ${AUTH_APPLE_KEY_ID}
-      TF_VAR_discord_client_id: ${AUTH_DISCORD_CLIENT_ID}
-      TF_VAR_gh_client_id: ${AUTH_GITHUB_CLIENT_ID}
-      TF_VAR_google_oauth_client_id: ${AUTH_GOOGLE_CLIENT_ID}
-      TF_VAR_twitter_client_id: ${AUTH_TWITTER_CLIENT_ID}
       TF_VAR_image_tag: ${IMAGE_TAG:-latest}
       TF_VAR_smtp_host: ${SMTP_HOST:-mailpit}
       TF_VAR_smtp_port: ${SMTP_PORT:-1025}
