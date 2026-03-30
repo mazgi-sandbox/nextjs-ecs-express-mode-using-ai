@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="app.Views.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel
+            HorizontalAlignment="Center"
+            Width="400"
+            Padding="24"
+            Spacing="16">
+
+            <TextBlock
+                x:Name="ErrorText"
+                Foreground="Red"
+                Visibility="Collapsed"
+                TextWrapping="Wrap" />
+
+            <!-- Email -->
+            <TextBlock
+                x:Uid="EmailSectionTitle"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Margin="0,16,0,0" />
+
+            <StackPanel
+                x:Name="EmailStatusPanel"
+                Orientation="Horizontal"
+                Spacing="8">
+                <TextBlock
+                    x:Name="EmailAddressText"
+                    VerticalAlignment="Center" />
+                <Border
+                    x:Name="EmailBadge"
+                    CornerRadius="10"
+                    Padding="8,2,8,2"
+                    VerticalAlignment="Center">
+                    <TextBlock
+                        x:Name="EmailBadgeText"
+                        FontSize="11"
+                        FontWeight="Medium" />
+                </Border>
+            </StackPanel>
+
+            <Button
+                x:Name="ResendVerificationButton"
+                x:Uid="ResendVerificationButton"
+                Click="ResendVerificationButton_Click"
+                Visibility="Collapsed"
+                AutomationProperties.AutomationId="settings_resendVerification" />
+
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    x:Name="EmailInput"
+                    x:Uid="NewEmailInput"
+                    InputScope="EmailSmtpAddress"
+                    AutomationProperties.AutomationId="settings_emailTextField" />
+                <DropDownButton
+                    x:Name="EmailDropdown"
+                    Grid.Column="1"
+                    Content="&#xE70D;"
+                    FontFamily="{StaticResource SymbolThemeFontFamily}"
+                    Visibility="Collapsed"
+                    AutomationProperties.AutomationId="settings_emailDropdown">
+                    <DropDownButton.Flyout>
+                        <MenuFlyout x:Name="EmailMenuFlyout" />
+                    </DropDownButton.Flyout>
+                </DropDownButton>
+                <Button
+                    x:Name="SaveEmailButton"
+                    x:Uid="SaveEmailButton"
+                    Grid.Column="2"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Click="SaveEmailButton_Click"
+                    AutomationProperties.AutomationId="settings_saveEmail" />
+            </Grid>
+
+            <!-- Password -->
+            <TextBlock
+                x:Uid="PasswordSectionTitle"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Margin="0,24,0,0" />
+
+            <TextBlock
+                x:Name="PasswordDescription"
+                TextWrapping="Wrap"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Margin="0,4,0,0" />
+
+            <TextBlock
+                x:Name="PasswordResetSuccessText"
+                x:Uid="PasswordResetSuccess"
+                Foreground="Green"
+                Visibility="Collapsed"
+                Margin="0,4,0,0" />
+
+            <Button
+                x:Name="PasswordResetButton"
+                Click="PasswordResetButton_Click"
+                AutomationProperties.AutomationId="settings_passwordReset"
+                Margin="0,8,0,0" />
+
+            <!-- Two-Factor Authentication -->
+            <TextBlock
+                x:Uid="MfaSectionTitle"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Margin="0,24,0,0" />
+
+            <!-- MFA Idle: Not Enabled -->
+            <StackPanel
+                x:Name="MfaIdleNotEnabledPanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="MfaIdleDescription"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Button
+                    x:Name="MfaEnableButton"
+                    x:Uid="MfaEnableButton"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Click="MfaEnableButton_Click"
+                    AutomationProperties.AutomationId="settings_mfaEnableButton" />
+            </StackPanel>
+
+            <!-- MFA Idle: Enabled -->
+            <StackPanel
+                x:Name="MfaIdleEnabledPanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border
+                        CornerRadius="10"
+                        Padding="8,2,8,2"
+                        Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}">
+                        <TextBlock
+                            x:Uid="MfaEnabledBadge"
+                            FontSize="11"
+                            FontWeight="Medium"
+                            Foreground="{ThemeResource SystemFillColorSuccessBrush}" />
+                    </Border>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button
+                        x:Name="MfaDisableButton"
+                        x:Uid="MfaDisableButton"
+                        Click="MfaDisableButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaDisableButton" />
+                    <Button
+                        x:Name="MfaRegenerateButton"
+                        x:Uid="MfaRegenerateButton"
+                        Click="MfaRegenerateButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaRegenerateButton" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- MFA Setup -->
+            <StackPanel
+                x:Name="MfaSetupPanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="MfaSetupDescription"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock
+                    x:Name="MfaSetupSecretText"
+                    IsTextSelectionEnabled="True"
+                    FontFamily="Consolas"
+                    TextWrapping="Wrap" />
+                <TextBox
+                    x:Name="MfaSetupCodeBox"
+                    x:Uid="MfaSetupCodeBox"
+                    InputScope="Number"
+                    MaxLength="6"
+                    AutomationProperties.AutomationId="settings_mfaSetupCodeBox" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button
+                        x:Name="MfaSetupVerifyButton"
+                        x:Uid="MfaVerifyEnableButton"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Click="MfaSetupVerifyButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaSetupVerifyButton" />
+                    <Button
+                        x:Uid="MfaSetupCancelButton"
+                        Click="MfaCancelButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaSetupCancelButton" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- MFA Recovery Codes -->
+            <StackPanel
+                x:Name="MfaRecoveryPanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="MfaRecoverySaveDescription"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <Border
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="12">
+                    <StackPanel
+                        x:Name="RecoveryCodesList"
+                        Spacing="4" />
+                </Border>
+                <Button
+                    x:Name="MfaRecoverySavedButton"
+                    x:Uid="MfaRecoverySavedButton"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Click="MfaRecoverySavedButton_Click"
+                    AutomationProperties.AutomationId="settings_mfaRecoverySavedButton" />
+            </StackPanel>
+
+            <!-- MFA Disable -->
+            <StackPanel
+                x:Name="MfaDisablePanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="MfaDisableDescription"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBox
+                    x:Name="MfaDisableCodeBox"
+                    x:Uid="MfaDisableCodeBox"
+                    InputScope="Number"
+                    MaxLength="6"
+                    AutomationProperties.AutomationId="settings_mfaDisableCodeBox" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button
+                        x:Name="MfaDisableConfirmButton"
+                        x:Uid="MfaDisableConfirmButton"
+                        Foreground="Red"
+                        BorderBrush="Red"
+                        Click="MfaDisableConfirmButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaDisableConfirmButton" />
+                    <Button
+                        x:Uid="MfaDisableCancelButton"
+                        Click="MfaCancelButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaDisableCancelButton" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- MFA Regenerate -->
+            <StackPanel
+                x:Name="MfaRegeneratePanel"
+                Spacing="8"
+                Visibility="Collapsed">
+                <TextBlock
+                    x:Uid="MfaRegenerateDescription"
+                    TextWrapping="Wrap"
+                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBox
+                    x:Name="MfaRegenerateCodeBox"
+                    x:Uid="MfaRegenerateCodeBox"
+                    InputScope="Number"
+                    MaxLength="6"
+                    AutomationProperties.AutomationId="settings_mfaRegenerateCodeBox" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button
+                        x:Name="MfaRegenerateConfirmButton"
+                        x:Uid="MfaRegenerateConfirmButton"
+                        Style="{StaticResource AccentButtonStyle}"
+                        Click="MfaRegenerateConfirmButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaRegenerateConfirmButton" />
+                    <Button
+                        x:Uid="MfaRegenerateCancelButton"
+                        Click="MfaCancelButton_Click"
+                        AutomationProperties.AutomationId="settings_mfaRegenerateCancelButton" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Linked Accounts -->
+            <TextBlock
+                x:Uid="LinkedAccountsTitle"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Margin="0,24,0,0" />
+
+            <!-- Apple -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Uid="AppleProviderLabel" VerticalAlignment="Center" />
+                <Button
+                    x:Name="AppleButton"
+                    Grid.Column="1"
+                    Click="AppleButton_Click"
+                    AutomationProperties.AutomationId="settings_appleButton" />
+            </Grid>
+
+            <!-- Discord -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Uid="DiscordProviderLabel" VerticalAlignment="Center" />
+                <Button
+                    x:Name="DiscordButton"
+                    Grid.Column="1"
+                    Click="DiscordButton_Click"
+                    AutomationProperties.AutomationId="settings_discordButton" />
+            </Grid>
+
+            <!-- GitHub -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Uid="GitHubProviderLabel" VerticalAlignment="Center" />
+                <Button
+                    x:Name="GithubButton"
+                    Grid.Column="1"
+                    Click="GithubButton_Click"
+                    AutomationProperties.AutomationId="settings_githubButton" />
+            </Grid>
+
+            <!-- Google -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Uid="GoogleProviderLabel" VerticalAlignment="Center" />
+                <Button
+                    x:Name="GoogleButton"
+                    Grid.Column="1"
+                    Click="GoogleButton_Click"
+                    AutomationProperties.AutomationId="settings_googleButton" />
+            </Grid>
+
+            <!-- X (Twitter) -->
+            <Grid ColumnSpacing="12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Uid="XProviderLabel" VerticalAlignment="Center" />
+                <Button
+                    x:Name="TwitterButton"
+                    Grid.Column="1"
+                    Click="TwitterButton_Click"
+                    AutomationProperties.AutomationId="settings_twitterButton" />
+            </Grid>
+
+            <!-- Theme -->
+            <TextBlock
+                x:Uid="ThemeSectionTitle"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Margin="0,24,0,0" />
+
+            <StackPanel
+                x:Name="ThemePicker"
+                Orientation="Horizontal"
+                Spacing="8"
+                AutomationProperties.AutomationId="settings_themePicker">
+                <RadioButton
+                    x:Name="ThemeSystemButton"
+                    x:Uid="ThemeSystemRadio"
+                    GroupName="Theme"
+                    Click="ThemeButton_Click"
+                    Tag="System"
+                    AutomationProperties.AutomationId="theme_system" />
+                <RadioButton
+                    x:Name="ThemeLightButton"
+                    x:Uid="ThemeLightRadio"
+                    GroupName="Theme"
+                    Click="ThemeButton_Click"
+                    Tag="Light"
+                    AutomationProperties.AutomationId="theme_light" />
+                <RadioButton
+                    x:Name="ThemeDarkButton"
+                    x:Uid="ThemeDarkRadio"
+                    GroupName="Theme"
+                    Click="ThemeButton_Click"
+                    Tag="Dark"
+                    AutomationProperties.AutomationId="theme_dark" />
+            </StackPanel>
+
+            <!-- Delete Account -->
+            <TextBlock
+                x:Uid="DeleteAccountSectionTitle"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                Margin="0,24,0,0" />
+
+            <TextBlock
+                x:Uid="DeleteAccountDescription"
+                TextWrapping="Wrap"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                Margin="0,4,0,0" />
+
+            <Button
+                x:Name="DeleteAccountButton"
+                x:Uid="DeleteAccountButton"
+                Click="DeleteAccountButton_Click"
+                Foreground="Red"
+                BorderBrush="Red"
+                AutomationProperties.AutomationId="settings_deleteAccountButton"
+                Margin="0,8,0,0" />
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

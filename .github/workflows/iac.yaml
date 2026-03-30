@@ -1,0 +1,95 @@
+name: IaC Persistent
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'iac/aws/*'
+      - 'iac/azure/*'
+      - 'iac/google/*'
+      - '.github/workflows/iac.yaml'
+      - '.github/workflows/_reusable-iac.yaml'
+  push:
+    branches: [main]
+    paths:
+      - 'iac/aws/*'
+      - 'iac/azure/*'
+      - 'iac/google/*'
+      - '.github/workflows/iac.yaml'
+      - '.github/workflows/_reusable-iac.yaml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: Staging
+        type: environment
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+jobs:
+  detect-changes:
+    name: Detect changed providers
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      providers: ${{ steps.set-providers.outputs.providers }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Detect changed providers
+        if: github.event_name != 'workflow_dispatch'
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            aws:
+              - 'iac/aws/*'
+            azure:
+              - 'iac/azure/*'
+            google:
+              - 'iac/google/*'
+
+      - name: Set provider matrix
+        id: set-providers
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo 'providers=["aws","azure","google"]' >> $GITHUB_OUTPUT
+          else
+            providers="[]"
+            if [ "${{ steps.filter.outputs.aws }}" = "true" ]; then
+              providers=$(echo "$providers" | jq -c '. + ["aws"]')
+            fi
+            if [ "${{ steps.filter.outputs.azure }}" = "true" ]; then
+              providers=$(echo "$providers" | jq -c '. + ["azure"]')
+            fi
+            if [ "${{ steps.filter.outputs.google }}" = "true" ]; then
+              providers=$(echo "$providers" | jq -c '. + ["google"]')
+            fi
+            echo "providers=$providers" >> $GITHUB_OUTPUT
+          fi
+
+  staging:
+    name: Persistent — Staging
+    needs: detect-changes
+    if: needs.detect-changes.outputs.providers != '[]'
+    uses: ./.github/workflows/_reusable-iac.yaml
+    with:
+      environment: Staging
+      providers: ${{ needs.detect-changes.outputs.providers }}
+      apply: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    secrets: inherit
+
+  production:
+    name: Persistent — Production
+    needs: [detect-changes, staging]
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'Production'
+    uses: ./.github/workflows/_reusable-iac.yaml
+    with:
+      environment: Production
+      providers: ${{ needs.detect-changes.outputs.providers }}
+      apply: true
+    secrets: inherit
