@@ -47,7 +47,7 @@ After creating a repository from this template, follow these steps. Only step 1 
 ├── web/
 │   ├── app/               # Next.js SPA
 │   └── e2e-tests/         # Playwright E2E tests
-├── iac/                   # Terraform IaC (AWS, Azure, GCP)
+├── iac/                   # Terraform IaC (AWS)
 ├── Dockerfiles.d/
 ├── .github/               # GitHub Actions workflows + custom actions
 └── docs/
@@ -56,10 +56,10 @@ After creating a repository from this template, follow these steps. Only step 1 
 ## Documentation
 
 - [Local Development](docs/local-development.md) — environment setup, running the stack, E2E tests
-- Cloud Deployment — [overview](docs/cloud-deployment.md) / [AWS](docs/cloud-deployment-aws.md) / [Azure](docs/cloud-deployment-azure.md) / [Google Cloud](docs/cloud-deployment-google.md)
+- Cloud Deployment — [overview](docs/cloud-deployment.md) / [AWS](docs/cloud-deployment-aws.md)
 - [CI / GitHub Actions](docs/ci.md) — workflows, required secrets and variables
-- [Secrets Management](docs/secrets.md) — cloud provider secret stores (AWS, Azure, GCP)
-- [OIDC Setup](docs/oidc-setup.md) — one-time cloud provider authentication setup
+- [Secrets Management](docs/secrets.md) — AWS Secrets Manager
+- [OIDC Setup](docs/oidc-setup.md) — one-time AWS OIDC authentication setup
 - [Git SHA Display](docs/git-sha-display.md) — per-platform build SHA injection
 - [Environment Variables](.example.secrets.env) — backend config and secrets
 - [GitHub Actions Variables](.example.env) — CI/CD and cloud deployment variables

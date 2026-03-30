@@ -15,14 +15,14 @@
 
 | Workflow | Description |
 |----------|-------------|
-| `backend.build.yaml` | Builds + pushes backend image to GHCR (+ ECR/ACR/Artifact Registry if configured). Passes `GIT_SHA` build-arg. |
-| `web.build.yaml` | Builds + pushes web image to GHCR (+ ECR/ACR/Artifact Registry if configured). Passes `GIT_SHA` build-arg for `NEXT_PUBLIC_GIT_SHA`. |
+| `backend.build.yaml` | Builds + pushes backend image to GHCR (+ ECR if configured). Passes `GIT_SHA` build-arg. |
+| `web.build.yaml` | Builds + pushes web image to GHCR (+ ECR if configured). Passes `GIT_SHA` build-arg for `NEXT_PUBLIC_GIT_SHA`. |
 
 ### IaC (Terraform)
 
 | Workflow | Description |
 |----------|-------------|
-| `iac.yaml` | Persistent layer: `dorny/paths-filter` → affected providers only. PR = plan, push to main = apply. |
+| `iac.yaml` | Persistent layer: PR = plan, push to main = apply. |
 | `iac.ephemeral.yaml` | Ephemeral layer: manual dispatch (plan/apply/destroy). |
 
 ## Env file naming convention
@@ -106,11 +106,6 @@ Other backend secrets are stored directly in cloud secret stores (not Terraform-
 |----------|---------|
 | `AWS_TF_STATE_BUCKET` | `my-tf-state-bucket` |
 | `AWS_TF_STATE_REGION` | `us-east-1` |
-| `AZURE_TF_STATE_RESOURCE_GROUP` | `terraform-state-rg` |
-| `AZURE_TF_STATE_STORAGE_ACCOUNT` | `mytfstatestorage` |
-| `AZURE_TF_STATE_LOCATION` | `eastus` |
-| `GOOGLE_TF_STATE_BUCKET` | `my-tf-state-bucket` |
-| `GOOGLE_TF_STATE_LOCATION` | `us-central1` |
 
 ### Cloud provider identifiers
 
@@ -120,9 +115,3 @@ Other backend secrets are stored directly in cloud secret stores (not Terraform-
 | `TF_VAR_base_domain_name` | `example.com` |
 | `TF_VAR_image_tag` | `latest` (optional) |
 | `AWS_IAM_ROLE_ARN` | `arn:aws:iam::123456789012:role/github-actions-iac` |
-| `ARM_CLIENT_ID` / `ARM_TENANT_ID` / `ARM_SUBSCRIPTION_ID` | Azure AD identifiers |
-| `AZURE_CONTAINER_REGISTRY_NAME` | `oauth2appacr` |
-| `GOOGLE_PROJECT_ID` | `my-project-id` |
-| `GOOGLE_REGION` | `us-central1` |
-| `GOOGLE_WORKLOAD_IDENTITY_PROVIDER` | `projects/.../providers/github` |
-| `GOOGLE_SERVICE_ACCOUNT` | `github-actions@project.iam.gserviceaccount.com` |

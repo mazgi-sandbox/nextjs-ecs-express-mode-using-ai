@@ -1,6 +1,6 @@
 # Secrets Management
 
-Each cloud provider stores the same 10 backend secrets. The persistent Terraform layer creates the secret containers (empty); the ephemeral layer automatically populates `DATABASE_URL`. The remaining 9 secrets must be populated manually or via CI **before** deploying the ephemeral layer.
+AWS Secrets Manager stores the 10 backend secrets. The persistent Terraform layer creates the secret containers (empty); the ephemeral layer automatically populates `DATABASE_URL`. The remaining 9 secrets must be populated manually or via CI **before** deploying the ephemeral layer.
 
 ## Secrets list
 
@@ -19,7 +19,7 @@ Each cloud provider stores the same 10 backend secrets. The persistent Terraform
 
 > **Note:** `DATABASE_URL` is the only secret whose value is computed by Terraform (from the database endpoint). All others require manual input.
 
-## Secret names per provider
+## Secret names
 
 ### AWS Secrets Manager
 
@@ -46,56 +46,6 @@ aws secretsmanager put-secret-value \
   --secret-string "$(openssl rand -base64 32)"
 ```
 
-### Azure Key Vault
-
-Key Vault (`{app_unique_id}-kv`) is defined in `iac/azure/key-vault.tf`. Secret names use kebab-case.
-
-| Secret name | Terraform resource |
-|---|---|
-| `database-url` | `azurerm_key_vault_secret.backend_database_url` |
-| `jwt-secret` | *(populate manually)* |
-| `jwt-refresh-secret` | *(populate manually)* |
-| `session-secret` | *(populate manually)* |
-| `apple-private-key` | *(populate manually)* |
-| `discord-client-secret` | *(populate manually)* |
-| `gh-client-secret` | *(populate manually)* |
-| `google-client-secret` | *(populate manually)* |
-| `twitter-client-secret` | *(populate manually)* |
-| `smtp-pass` | *(populate manually)* |
-
-Populate via CLI:
-
-```sh
-az keyvault secret set \
-  --vault-name "oauth2-app-kv" \
-  --name "jwt-secret" \
-  --value "$(openssl rand -base64 32)"
-```
-
-### Google Secret Manager
-
-Defined in `iac/google/secret-manager.tf`. Names use the pattern `{app_unique_id}-backend-{kebab-name}`.
-
-| Secret ID | Terraform resource |
-|---|---|
-| `oauth2-app-backend-database-url` | `google_secret_manager_secret.backend_database_url` |
-| `oauth2-app-backend-auth-jwt-secret` | `google_secret_manager_secret.backend_jwt_secret` |
-| `oauth2-app-backend-auth-jwt-refresh-secret` | `google_secret_manager_secret.backend_jwt_refresh_secret` |
-| `oauth2-app-backend-auth-session-secret` | `google_secret_manager_secret.backend_session_secret` |
-| `oauth2-app-backend-auth-apple-private-key` | `google_secret_manager_secret.backend_apple_private_key` |
-| `oauth2-app-backend-auth-discord-client-secret` | `google_secret_manager_secret.backend_discord_client_secret` |
-| `oauth2-app-backend-auth-gh-client-secret` | `google_secret_manager_secret.backend_gh_client_secret` |
-| `oauth2-app-backend-auth-google-client-secret` | `google_secret_manager_secret.backend_google_client_secret` |
-| `oauth2-app-backend-auth-twitter-client-secret` | `google_secret_manager_secret.backend_twitter_client_secret` |
-| `oauth2-app-backend-smtp-pass` | `google_secret_manager_secret.backend_smtp_pass` |
-
-Populate via CLI:
-
-```sh
-gcloud secrets versions add "oauth2-app-backend-auth-jwt-secret" \
-  --data-file=- <<< "$(openssl rand -base64 32)"
-```
-
 ## Deployment workflow
 
 1. **`terraform apply` (persistent layer)** — creates secret containers with no values
@@ -107,5 +57,3 @@ gcloud secrets versions add "oauth2-app-backend-auth-jwt-secret" \
 | Provider | Mechanism | Permissions |
 |---|---|---|
 | AWS | IAM policy on ECS execution role | `secretsmanager:GetSecretValue` for all 10 secrets |
-| Azure | Key Vault access policy on user-assigned managed identity | `Get` (read-only) |
-| Google | IAM binding on default Compute service account | `roles/secretmanager.secretAccessor` for all 10 secrets |

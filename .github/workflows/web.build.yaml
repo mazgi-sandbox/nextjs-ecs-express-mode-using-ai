@@ -7,8 +7,6 @@ on:
       - 'web/app/**'
       - 'Dockerfiles.d/web-build/**'
       - 'iac/aws/*'
-      - 'iac/azure/*'
-      - 'iac/google/*'
       - '.github/workflows/web.build.yaml'
       - '.github/workflows/_reusable-web-build.yaml'
   pull_request:
@@ -17,8 +15,6 @@ on:
       - 'web/app/**'
       - 'Dockerfiles.d/web-build/**'
       - 'iac/aws/*'
-      - 'iac/azure/*'
-      - 'iac/google/*'
       - '.github/workflows/web.build.yaml'
       - '.github/workflows/_reusable-web-build.yaml'
   workflow_dispatch:

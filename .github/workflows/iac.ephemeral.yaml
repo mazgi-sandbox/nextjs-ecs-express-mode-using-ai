@@ -8,14 +8,6 @@ on:
         required: true
         default: Staging
         type: environment
-      provider:
-        description: 'Cloud provider'
-        required: true
-        type: choice
-        options:
-          - aws
-          - azure
-          - google
       action:
         description: 'Action to perform'
         required: true
@@ -31,7 +23,7 @@ permissions:
 
 jobs:
   ephemeral:
-    name: "Ephemeral — ${{ inputs.environment }} / ${{ inputs.provider }} / ${{ inputs.action }}"
+    name: "Ephemeral — ${{ inputs.environment }} / aws / ${{ inputs.action }}"
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment: ${{ inputs.environment }}
@@ -42,91 +34,31 @@ jobs:
         uses: hashicorp/setup-terraform@v4
 
       - name: Configure AWS credentials
-        if: inputs.provider == 'aws'
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.AWS_IAM_ROLE_ARN }}
           aws-region: us-east-1
 
-      - name: Authenticate to Azure
-        if: inputs.provider == 'azure'
-        uses: azure/login@v2
-        with:
-          client-id: ${{ vars.ARM_CLIENT_ID }}
-          tenant-id: ${{ vars.ARM_TENANT_ID }}
-          subscription-id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-
-      - name: Set Azure OIDC environment for Terraform
-        if: inputs.provider == 'azure'
-        run: |
-          echo "ARM_USE_OIDC=true" >> $GITHUB_ENV
-          echo "ARM_CLIENT_ID=${{ vars.ARM_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "ARM_TENANT_ID=${{ vars.ARM_TENANT_ID }}" >> $GITHUB_ENV
-          echo "ARM_SUBSCRIPTION_ID=${{ vars.ARM_SUBSCRIPTION_ID }}" >> $GITHUB_ENV
-
-      - name: Authenticate to GCP
-        if: inputs.provider == 'google'
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ vars.GOOGLE_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GOOGLE_SERVICE_ACCOUNT }}
-
       - name: Bootstrap S3 tfstate backend
-        if: inputs.provider == 'aws'
         uses: ./.github/actions/bootstrap-tfstate-s3
         with:
           bucket: ${{ vars.AWS_TF_STATE_BUCKET }}
           region: ${{ vars.AWS_TF_STATE_REGION }}
 
-      - name: Bootstrap Azure tfstate backend
-        if: inputs.provider == 'azure'
-        uses: ./.github/actions/bootstrap-tfstate-azurerm
-        with:
-          resource-group: ${{ vars.AZURE_TF_STATE_RESOURCE_GROUP }}
-          storage-account: ${{ vars.AZURE_TF_STATE_STORAGE_ACCOUNT }}
-          location: ${{ vars.AZURE_TF_STATE_LOCATION }}
-
-      - name: Bootstrap GCS tfstate backend
-        if: inputs.provider == 'google'
-        uses: ./.github/actions/bootstrap-tfstate-gcs
-        with:
-          bucket: ${{ vars.GOOGLE_TF_STATE_BUCKET }}
-          location: ${{ vars.GOOGLE_TF_STATE_LOCATION }}
-          project-id: ${{ vars.GOOGLE_PROJECT_ID }}
-
       - name: Terraform Init (persistent)
         run: |
-          case "${{ inputs.provider }}" in
-            aws)
-              terraform -chdir=iac/aws init \
-                -backend-config="bucket=${{ vars.AWS_TF_STATE_BUCKET }}" \
-                -backend-config="region=${{ vars.AWS_TF_STATE_REGION }}"
-              ;;
-            azure)
-              terraform -chdir=iac/azure init \
-                -backend-config="resource_group_name=${{ vars.AZURE_TF_STATE_RESOURCE_GROUP }}" \
-                -backend-config="storage_account_name=${{ vars.AZURE_TF_STATE_STORAGE_ACCOUNT }}" \
-                -backend-config="container_name=tfstate"
-              ;;
-            google)
-              terraform -chdir=iac/google init \
-                -backend-config="bucket=${{ vars.GOOGLE_TF_STATE_BUCKET }}"
-              ;;
-          esac
+          terraform -chdir=iac/aws init \
+            -backend-config="bucket=${{ vars.AWS_TF_STATE_BUCKET }}" \
+            -backend-config="region=${{ vars.AWS_TF_STATE_REGION }}"
 
       - name: Verify persistent layer has no drift
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
-          TF_VAR_gcp_project_id: ${{ vars.GOOGLE_PROJECT_ID }}
-          TF_VAR_gcp_region: ${{ vars.GOOGLE_REGION }}
-          TF_VAR_gcp_zone: ${{ vars.GOOGLE_ZONE }}
-          TF_VAR_azure_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-          TF_VAR_azure_location: ${{ vars.AZURE_LOCATION }}
           TF_VAR_base_domain_name: ${{ vars.BASE_DOMAIN_NAME }}
         run: |
           set +e
-          terraform -chdir=iac/${{ inputs.provider }} plan -no-color -detailed-exitcode -input=false
+          terraform -chdir=iac/aws plan -no-color -detailed-exitcode -input=false
           exit_code=$?
           set -e
           if [ "$exit_code" -eq 1 ]; then
@@ -139,46 +71,24 @@ jobs:
 
       - name: Terraform Init (ephemeral)
         run: |
-          case "${{ inputs.provider }}" in
-            aws)
-              terraform -chdir=iac/aws/ephemeral init \
-                -backend-config="bucket=${{ vars.AWS_TF_STATE_BUCKET }}" \
-                -backend-config="region=${{ vars.AWS_TF_STATE_REGION }}"
-              ;;
-            azure)
-              terraform -chdir=iac/azure/ephemeral init \
-                -backend-config="resource_group_name=${{ vars.AZURE_TF_STATE_RESOURCE_GROUP }}" \
-                -backend-config="storage_account_name=${{ vars.AZURE_TF_STATE_STORAGE_ACCOUNT }}" \
-                -backend-config="container_name=tfstate"
-              ;;
-            google)
-              terraform -chdir=iac/google/ephemeral init \
-                -backend-config="bucket=${{ vars.GOOGLE_TF_STATE_BUCKET }}"
-              ;;
-          esac
+          terraform -chdir=iac/aws/ephemeral init \
+            -backend-config="bucket=${{ vars.AWS_TF_STATE_BUCKET }}" \
+            -backend-config="region=${{ vars.AWS_TF_STATE_REGION }}"
 
       - name: Terraform Validate
         if: inputs.action != 'destroy'
-        run: terraform -chdir=iac/${{ inputs.provider }}/ephemeral validate
+        run: terraform -chdir=iac/aws/ephemeral validate
 
       - name: Terraform Plan
         if: inputs.action == 'plan' || inputs.action == 'apply'
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
-          TF_VAR_gcp_project_id: ${{ vars.GOOGLE_PROJECT_ID }}
-          TF_VAR_gcp_region: ${{ vars.GOOGLE_REGION }}
-          TF_VAR_gcp_zone: ${{ vars.GOOGLE_ZONE }}
-          TF_VAR_azure_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-          TF_VAR_azure_location: ${{ vars.AZURE_LOCATION }}
           TF_VAR_base_domain_name: ${{ vars.BASE_DOMAIN_NAME }}
           TF_VAR_database_password: ${{ secrets.TF_VAR_database_password }}
           TF_VAR_image_tag: ${{ vars.IMAGE_TAG || 'latest' }}
           TF_VAR_aws_tf_state_bucket: ${{ vars.AWS_TF_STATE_BUCKET }}
           TF_VAR_aws_tf_state_region: ${{ vars.AWS_TF_STATE_REGION }}
-          TF_VAR_azure_tf_state_resource_group: ${{ vars.AZURE_TF_STATE_RESOURCE_GROUP }}
-          TF_VAR_azure_tf_state_storage_account: ${{ vars.AZURE_TF_STATE_STORAGE_ACCOUNT }}
-          TF_VAR_google_tf_state_bucket: ${{ vars.GOOGLE_TF_STATE_BUCKET }}
           TF_VAR_apple_client_id: ${{ vars.AUTH_APPLE_CLIENT_ID }}
           TF_VAR_apple_team_id: ${{ vars.AUTH_APPLE_TEAM_ID }}
           TF_VAR_apple_key_id: ${{ vars.AUTH_APPLE_KEY_ID }}
@@ -193,9 +103,9 @@ jobs:
           TF_VAR_smtp_user: ${{ vars.SMTP_USER }}
           TF_VAR_smtp_from: ${{ vars.SMTP_FROM }}
         run: |
-          terraform -chdir=iac/${{ inputs.provider }}/ephemeral plan -no-color -input=false 2>&1 | tee plan-output.txt
+          terraform -chdir=iac/aws/ephemeral plan -no-color -input=false 2>&1 | tee plan-output.txt
           {
-            echo "### Terraform Plan — ${{ inputs.provider }}/ephemeral"
+            echo "### Terraform Plan — aws/ephemeral"
             echo '```'
             cat plan-output.txt
             echo '```'
@@ -206,19 +116,11 @@ jobs:
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
-          TF_VAR_gcp_project_id: ${{ vars.GOOGLE_PROJECT_ID }}
-          TF_VAR_gcp_region: ${{ vars.GOOGLE_REGION }}
-          TF_VAR_gcp_zone: ${{ vars.GOOGLE_ZONE }}
-          TF_VAR_azure_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-          TF_VAR_azure_location: ${{ vars.AZURE_LOCATION }}
           TF_VAR_base_domain_name: ${{ vars.BASE_DOMAIN_NAME }}
           TF_VAR_database_password: ${{ secrets.TF_VAR_database_password }}
           TF_VAR_image_tag: ${{ vars.IMAGE_TAG || 'latest' }}
           TF_VAR_aws_tf_state_bucket: ${{ vars.AWS_TF_STATE_BUCKET }}
           TF_VAR_aws_tf_state_region: ${{ vars.AWS_TF_STATE_REGION }}
-          TF_VAR_azure_tf_state_resource_group: ${{ vars.AZURE_TF_STATE_RESOURCE_GROUP }}
-          TF_VAR_azure_tf_state_storage_account: ${{ vars.AZURE_TF_STATE_STORAGE_ACCOUNT }}
-          TF_VAR_google_tf_state_bucket: ${{ vars.GOOGLE_TF_STATE_BUCKET }}
           TF_VAR_apple_client_id: ${{ vars.AUTH_APPLE_CLIENT_ID }}
           TF_VAR_apple_team_id: ${{ vars.AUTH_APPLE_TEAM_ID }}
           TF_VAR_apple_key_id: ${{ vars.AUTH_APPLE_KEY_ID }}
@@ -232,26 +134,18 @@ jobs:
           TF_VAR_smtp_secure: ${{ vars.SMTP_SECURE }}
           TF_VAR_smtp_user: ${{ vars.SMTP_USER }}
           TF_VAR_smtp_from: ${{ vars.SMTP_FROM }}
-        run: terraform -chdir=iac/${{ inputs.provider }}/ephemeral apply -auto-approve -input=false
+        run: terraform -chdir=iac/aws/ephemeral apply -auto-approve -input=false
 
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
         env:
           TF_VAR_app_unique_id: ${{ vars.APP_UNIQUE_ID }}
           TF_VAR_aws_region: ${{ vars.AWS_REGION }}
-          TF_VAR_gcp_project_id: ${{ vars.GOOGLE_PROJECT_ID }}
-          TF_VAR_gcp_region: ${{ vars.GOOGLE_REGION }}
-          TF_VAR_gcp_zone: ${{ vars.GOOGLE_ZONE }}
-          TF_VAR_azure_subscription_id: ${{ vars.ARM_SUBSCRIPTION_ID }}
-          TF_VAR_azure_location: ${{ vars.AZURE_LOCATION }}
           TF_VAR_base_domain_name: ${{ vars.BASE_DOMAIN_NAME }}
           TF_VAR_database_password: ${{ secrets.TF_VAR_database_password }}
           TF_VAR_image_tag: ${{ vars.IMAGE_TAG || 'latest' }}
           TF_VAR_aws_tf_state_bucket: ${{ vars.AWS_TF_STATE_BUCKET }}
           TF_VAR_aws_tf_state_region: ${{ vars.AWS_TF_STATE_REGION }}
-          TF_VAR_azure_tf_state_resource_group: ${{ vars.AZURE_TF_STATE_RESOURCE_GROUP }}
-          TF_VAR_azure_tf_state_storage_account: ${{ vars.AZURE_TF_STATE_STORAGE_ACCOUNT }}
-          TF_VAR_google_tf_state_bucket: ${{ vars.GOOGLE_TF_STATE_BUCKET }}
           TF_VAR_apple_client_id: ${{ vars.AUTH_APPLE_CLIENT_ID }}
           TF_VAR_apple_team_id: ${{ vars.AUTH_APPLE_TEAM_ID }}
           TF_VAR_apple_key_id: ${{ vars.AUTH_APPLE_KEY_ID }}
@@ -265,4 +159,4 @@ jobs:
           TF_VAR_smtp_secure: ${{ vars.SMTP_SECURE }}
           TF_VAR_smtp_user: ${{ vars.SMTP_USER }}
           TF_VAR_smtp_from: ${{ vars.SMTP_FROM }}
-        run: terraform -chdir=iac/${{ inputs.provider }}/ephemeral destroy -auto-approve -input=false
+        run: terraform -chdir=iac/aws/ephemeral destroy -auto-approve -input=false
