@@ -37,3 +37,4 @@
 - could you write prompts in step-5/prompts.md that need to you growth it from step-5 to step-6?
 - could you write prompts in step-6/prompts.md that need to you growth it from step-6 to step-99?
 - could you rename prompts.md to meta.prompts.md?
+- could you gather and summarize each step-* and write out it in README.md?
